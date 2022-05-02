@@ -30,6 +30,34 @@ def look_front():
     names            = "HeadPitch"
     motion_service.setAngles(names,angles,fractionMaxSpeed)
     time.sleep(1.0)
+# A un metro el nao puede detectar landmarks de 19.8cm de diametro en un cono de +-25 grados. (Ojo que 25 le cuesta)
+def look_semi_right():
+    motion_service  = session.service("ALMotion")
+    motion_service.setStiffnesses("Head", 1.0) 
+
+    names            = "HeadYaw"
+    angles           = -math.radians(45)
+    fractionMaxSpeed = 0.1
+    motion_service.setAngles(names,angles,fractionMaxSpeed)
+    time.sleep(1.0)
+    names            = "HeadPitch"
+    angles           = 0
+    motion_service.setAngles(names,angles,fractionMaxSpeed)
+    time.sleep(1.0)
+
+def look_total_right():
+    motion_service  = session.service("ALMotion")
+    motion_service.setStiffnesses("Head", 1.0) 
+
+    names            = "HeadYaw"
+    angles           = -math.radians(90)
+    fractionMaxSpeed = 0.1
+    motion_service.setAngles(names,angles,fractionMaxSpeed)
+    time.sleep(1.0)
+    names            = "HeadPitch"
+    angles           = 0
+    motion_service.setAngles(names,angles,fractionMaxSpeed)
+    time.sleep(1.0)
 
 def get_proxy(proxyName, ip, port):
     try:
@@ -70,7 +98,7 @@ def main(session, args):
     disable_basic_awareness(session)
 
     # Look front for finding the landmark
-    look_front()
+    look_semi_right()
 
     # Create a proxy to ALLandMarkDetection
     landMarkProxy = get_proxy("ALLandMarkDetection", args.ip, args.port)
@@ -193,3 +221,6 @@ if __name__ == "__main__":
                 "Please check your script arguments. Run with -h option for help.")
         sys.exit(1)
     main(session, args)
+
+# Sample cmd
+# python landmark.py --ip=192.168.0.171 --port=9559 --out=data.csv --landmark_diameter=19.8 --actual_distance=30 --torso_orientation=F
