@@ -45,12 +45,23 @@ def look_semi_right():
     motion_service.setAngles(names,angles,fractionMaxSpeed)
     time.sleep(1.0)
 
-def look_total_right():
+def get_side_mult(side_str):
+    if side_str == "left":
+        mult = 1
+    elif side_str == "right":
+        mult = -1
+    else:
+        print("side_str must be either \"left\" or \"right\"")
+        exit(1)
+    return mult
+
+def look_at(angle, side_str):
+    side_mult = get_side_mult(side_str)
     motion_service  = session.service("ALMotion")
     motion_service.setStiffnesses("Head", 1.0) 
 
     names            = "HeadYaw"
-    angles           = -math.radians(90)
+    angles           = side_mult * math.radians(angle)
     fractionMaxSpeed = 0.1
     motion_service.setAngles(names,angles,fractionMaxSpeed)
     time.sleep(1.0)
@@ -97,8 +108,8 @@ def main(session, args):
     # Stop basic awareness so that nao doesn't move his head when not commanded 
     disable_basic_awareness(session)
 
-    # Look front for finding the landmark
-    look_semi_right()
+    # Look at some angle for finding the landmark
+    look_at(0, "right")
 
     # Create a proxy to ALLandMarkDetection
     landMarkProxy = get_proxy("ALLandMarkDetection", args.ip, args.port)
@@ -120,7 +131,7 @@ def main(session, args):
     # whether landmarks are detected.
     currentReadings = []
     totalTries = 0
-    while totalTries < (args.measurings * 3) and len(currentReadings) < args.measurings:
+    while True or (totalTries < (args.measurings * 3) and len(currentReadings) < args.measurings):
         time.sleep(0.5)
         val = memoryProxy.getData(memKey, 0)
         # Check whether we got a valid output: a list with two fields.
@@ -128,6 +139,8 @@ def main(session, args):
             # We detected landmarks !
             # Second Field = array of Mark_Info's.
             markInfoArray = val[1]
+            print("val: ")
+            print(val)
 
             try:
                 # Browse the markInfoArray to get info on each detected mark.

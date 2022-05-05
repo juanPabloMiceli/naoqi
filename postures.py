@@ -13,14 +13,14 @@ def main(session):
     posture_service = session.service("ALRobotPosture")
 
     posture_service.goToPosture("StandInit", 1.0)
-    posture_service.goToPosture("SitRelax", 1.0)
-    posture_service.goToPosture("StandZero", 1.0)
-    posture_service.goToPosture("LyingBelly", 1.0)
-    posture_service.goToPosture("LyingBack", 1.0)
-    posture_service.goToPosture("Stand", 1.0)
-    posture_service.goToPosture("Crouch", 1.0)
-    posture_service.goToPosture("Sit", 1.0)
-    posture_service.goToPosture("StandInit", 1.0)
+    # posture_service.goToPosture("SitRelax", 1.0)
+    # posture_service.goToPosture("StandZero", 1.0)
+    # posture_service.goToPosture("LyingBelly", 1.0)
+    # posture_service.goToPosture("LyingBack", 1.0)
+    # posture_service.goToPosture("Stand", 1.0)
+    # posture_service.goToPosture("Crouch", 1.0)
+    # posture_service.goToPosture("Sit", 1.0)
+    # posture_service.goToPosture("StandInit", 1.0)
 
     print posture_service.getPostureFamily()
 
