@@ -12,7 +12,9 @@ import sys
 from os.path import exists
 import math
 import argparse
-
+import numpy as np
+import cv2
+from customQRDetection import save_image_with_marked_qrs
 
 def disable_basic_awareness(session):
     ba_service = session.service("ALBasicAwareness")
@@ -116,7 +118,7 @@ def main(session, args):
 
     videoDeviceProxy = get_proxy("ALVideoDevice", args.ip, args.port)
 
-    # videoId = videoDeviceProxy.subscribeCamera("My_Test_Video", 0, 3, 13, 1)
+    videoId = videoDeviceProxy.subscribeCamera("My_Test_Video", 0, 3, 13, 1)
     # print(videoId)
     # Subscribe to the ALLandMarkDetection proxy
     # This means that the module will write in ALMemory with
@@ -144,11 +146,11 @@ def main(session, args):
         print("colorSpace: " + str(container[3]))
         print("image len: " + str(len(container[6])))
         image = map(ord, container[6])
-        print("First pixel: " + str(ord(container[6][0])) + ", " + str(ord(container[6][1])) + ", " + str(ord(container[6][2])))
+        image_array = np.array(image, dtype=np.uint8)
+        image_array = image_array.reshape(960,1280,3)
+        save_image_with_marked_qrs(image_array, "imagen_" + str(totalTries) + ".jpg")
+
         print("id: " + str(container[7]))
-        f = open("qr.txt", "a")
-        f.write(str(image))
-        f.close()
         val = memoryProxy.getData(memKey, 0)
         # Check whether we got a valid output: a list with two fields.
         if(val and isinstance(val, list) and len(val) >= 2):

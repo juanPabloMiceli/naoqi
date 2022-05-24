@@ -1,7 +1,8 @@
 import numpy as np
 import cv2
 from pyzbar.pyzbar import decode
-images = ['qrArmario25cm.jpg', 'qrArmario120cm.jpg', 'qrArmario240cm.jpg', 'qrArmario280cm.jpg', 'qrArmarioCote.jpg']
+# images = ['qrArmario25cm.jpg', 'qrArmario120cm.jpg', 'qrArmario240cm.jpg', 'qrArmario280cm.jpg', 'qrArmarioCote.jpg']
+images = ['3qrs.jpg', '2qrs.jpg']
 WIDTH = 1280
 HEIGHT = 960
 CONSTANT = 0.8495
@@ -76,38 +77,82 @@ def get_beta(point):
 def get_beta_degrees(point):
     return np.degrees(get_beta(point))
 
-for image in images:
-    img = cv2.imread("images/"+image,cv2.IMREAD_GRAYSCALE)
-    img2 = cv2.imread("images/"+image)
-    blur = cv2.GaussianBlur(img,(5,5),0)
-    ret3,th3 = cv2.threshold(blur,0,255,cv2.THRESH_BINARY+cv2.THRESH_OTSU)
-    decoded = decode(th3)
-    polygon = decoded[0].polygon
-    print(f"{image=}")
-    print(f"{polygon=}")
-    res = cv2.rectangle(th3, decoded[0].rect, (0, 0, 0), 2)
-    qr_center_relative_to_image_center = get_qr_center_relative_to_image_center(polygon)
-    qr_center = get_qr_center(polygon)
-    alpha = get_alpha(qr_center_relative_to_image_center)
-    alpha_degrees = get_alpha_degrees(qr_center_relative_to_image_center)
-    beta = get_beta(qr_center_relative_to_image_center)
-    beta_degrees = get_beta_degrees(qr_center_relative_to_image_center)
-    distance = get_distance(polygon)
-    
+def get_processed_image(rgb_image):
+    gray_image = cv2.cvtColor(rgb_image, cv2.COLOR_RGB2GRAY)
+    blur_image = cv2.GaussianBlur(gray_image,(5,5),0)
+    ret3,th_image = cv2.threshold(blur_image,0,255,cv2.THRESH_BINARY+cv2.THRESH_OTSU)
+    return th_image
 
-    print(f"{get_top_left(polygon)=}")
-    print(f"{qr_center_relative_to_image_center=}, {alpha=}, {alpha_degrees=}, {beta=}, {beta_degrees=}, {distance=}")
-    image = cv2.circle(img2, (get_top_left(polygon)[0], get_top_left(polygon)[1]), radius=0, color=(0, 0, 255), thickness=5)
+def add_points_to_image(image, polygon):
+    # Top left corner
+    image = cv2.circle(image, (get_top_left(polygon)[0], get_top_left(polygon)[1]), radius=0, color=(0, 0, 255), thickness=5)
+    # Top right corner
     image = cv2.circle(image, (get_top_right(polygon)[0], get_top_right(polygon)[1]), radius=0, color=(0, 255, 0), thickness=5)
+    # Bottom left corner
     image = cv2.circle(image, (get_bottom_left(polygon)[0], get_bottom_left(polygon)[1]), radius=0, color=(255, 0, 0), thickness=5)
+    # Bottom right corner
     image = cv2.circle(image, (get_bottom_right(polygon)[0], get_bottom_right(polygon)[1]), radius=0, color=(255, 0, 255), thickness=5)
+    # Middle of the bottom line
     image = cv2.circle(image, (get_middle_bottom(polygon)[0], get_middle_bottom(polygon)[1]), radius=0, color=(231, 0, 123), thickness=5)
+    # Middle of the top line
     image = cv2.circle(image, (get_middle_top(polygon)[0], get_middle_top(polygon)[1]), radius=0, color=(123, 0, 231), thickness=5)
+    # QR center
+    qr_center = get_qr_center(polygon)
     image = cv2.circle(image, (qr_center[0], qr_center[1]), radius=0, color=(0, 255, 255), thickness=5) # Center
-    # Center of image
-    image = cv2.circle(image, (WIDTH//2, HEIGHT//2), radius=0, color=(255, 255, 0), thickness=5)
-    cv2.imshow('image', image)
-    cv2.waitKey(0)
-    # and finally destroy/close all open windows
-    cv2.destroyAllWindows()
-    # cv2.imwrite("images/out/"+image, res)
+
+    return image
+
+def save_image_with_marked_qrs(rgb_image, name):
+    processed_image = get_processed_image(rgb_image)
+    decoded_qrs = decode(th3)
+    polygons = [decoded_qr.polygon for decoded_qr in decoded_qrs]
+    for polygon in polygons:
+        rgb_image = add_points_to_image(rgb_image, polygon)
+    cv2.imwrite(name, rgb_image)
+    print("Image " + name + " correctly saved.")
+
+
+
+
+if __name__ == "__main__":
+    for image in images:
+        img = cv2.imread("images/"+image,cv2.IMREAD_GRAYSCALE)
+        blur = cv2.GaussianBlur(img,(5,5),0)
+        _,th3 = cv2.threshold(blur,0,255,cv2.THRESH_BINARY+cv2.THRESH_OTSU)
+        decoded = decode(th3)
+        img2 = cv2.imread("images/"+image)
+
+        for decodedElem in decoded:
+            
+            polygon = decodedElem.polygon
+            # print(f"{image=}")
+            # print(f"{polygon=}")
+            
+            # res = cv2.rectangle(th3, (decoded[0].rect), (0, 0, 0), 2)
+            qr_center_relative_to_image_center = get_qr_center_relative_to_image_center(polygon)
+            qr_center = get_qr_center(polygon)
+            alpha = get_alpha(qr_center_relative_to_image_center)
+            alpha_degrees = get_alpha_degrees(qr_center_relative_to_image_center)
+            beta = get_beta(qr_center_relative_to_image_center)
+            beta_degrees = get_beta_degrees(qr_center_relative_to_image_center)
+            distance = get_distance(polygon)
+            
+
+            print(f"{get_top_left(polygon)=}")
+            print(str(decodedElem.data))
+            print(f"{qr_center_relative_to_image_center=}, {alpha=}, {alpha_degrees=}, {beta=}, {beta_degrees=}, {distance=}")
+            image = cv2.polylines(img2, np.array([polygon]), True, (255,0,0))
+            image = cv2.circle(image, (get_top_left(polygon)[0], get_top_left(polygon)[1]), radius=0, color=(0, 0, 255), thickness=5)
+            image = cv2.circle(image, (get_top_right(polygon)[0], get_top_right(polygon)[1]), radius=0, color=(0, 255, 0), thickness=5)
+            image = cv2.circle(image, (get_bottom_left(polygon)[0], get_bottom_left(polygon)[1]), radius=0, color=(255, 0, 0), thickness=5)
+            image = cv2.circle(image, (get_bottom_right(polygon)[0], get_bottom_right(polygon)[1]), radius=0, color=(255, 0, 255), thickness=5)
+            image = cv2.circle(image, (get_middle_bottom(polygon)[0], get_middle_bottom(polygon)[1]), radius=0, color=(231, 0, 123), thickness=5)
+            image = cv2.circle(image, (get_middle_top(polygon)[0], get_middle_top(polygon)[1]), radius=0, color=(123, 0, 231), thickness=5)
+            image = cv2.circle(image, (qr_center[0], qr_center[1]), radius=0, color=(0, 255, 255), thickness=5) # Center
+            # Center of image
+            image = cv2.circle(image, (WIDTH//2, HEIGHT//2), radius=0, color=(255, 255, 0), thickness=5)
+        cv2.imshow('image', image)
+        cv2.waitKey(0)
+        # and finally destroy/close all open windows
+        cv2.destroyAllWindows()
+        # cv2.imwrite("images/out/"+image, res)
