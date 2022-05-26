@@ -13,7 +13,7 @@ CENTER = (WIDTH/2, WIDTH/2)
 ALPHA = 0
 CIRCLE_DISTANCE = 50
 BACKGROUND_COLOR = (0,0,0)
-TOTAL_CIRCLES = 8
+TOTAL_CIRCLES = 6
 SHARED_FILE = "sharedFile.csv"
 LAST_DATA_TIME = time.time()
 NEON_GREEN = (57, 255, 20)
@@ -35,7 +35,6 @@ def draw_target(screen, alpha, center, distance, angle, id, color):
     point = get_line_end(center, distance, angle+alpha)
     pygame.draw.line(screen, color, center, point, 1)
     pygame.draw.circle(screen, color, point, 5, 0)
-    # (120, 120, 120)
     font = pygame.font.SysFont('timesnewroman',  16)
  
     text = font.render(id, True, color)
@@ -45,12 +44,37 @@ def draw_target(screen, alpha, center, distance, angle, id, color):
     textRect = text.get_rect()
     
     # set the center of the rectangular object.
-    textRect.center = (point[0]+15, point[1])
+    textRect.center = (point[0], point[1]-15)
     screen.blit(text, textRect)
 
 def draw_targets(screen, alpha, center, data_df, color):
-    for index, data_elem in data_df.iterrows():
-        draw_target(screen, alpha, center, data_elem['distance'], data_elem['angle'], data_elem['id'].astype(str), color)
+    for _, data_elem in data_df.iterrows():
+        draw_target(screen, alpha, center, data_elem['distance'], data_elem['angle'], data_elem['id'].astype(int).astype(str), color)
+
+
+def draw_target_info(screen, alpha, center, counter, color, distance, angle, id):
+    font = pygame.font.SysFont('timesnewroman',  16)
+ 
+    text = font.render(f"id: {id.astype(int)}, distance: {distance}, angle: {angle}", True, color)
+    
+    # create a rectangular object for the
+    # text surface object
+    textRect = text.get_rect()
+    
+    # set the center of the rectangular object.
+    textRect.left = 10
+    textRect.top = center[1] + (counter*20)+ 290
+    screen.blit(text, textRect)
+
+def draw_targets_info(screen, alpha, center, data_df, color):
+    counter = 0
+    for _, data_elem in data_df.iterrows():
+        draw_target_info(screen, alpha, center, counter, color, data_elem['distance'].astype(int).astype(str), data_elem['angle'].astype(int).astype(str), data_elem['id'].astype(int).astype(str))
+        counter += 1
+
+def draw_qrs(screen, alpha, center, data_df, color):
+    draw_targets(screen, alpha, center, data_df, color)
+    draw_targets_info(screen, alpha, center, data_df, color)
 
 def data_changed(file, last_time_data):
     return last_time_data < os.path.getmtime(file)
@@ -105,7 +129,7 @@ while running:
         data_df = retrieve_data(SHARED_FILE)
         LAST_DATA_TIME = time.time()  
 
-    draw_targets(screen, ALPHA, CENTER, data_df, NEON_GREEN)
+    draw_qrs(screen, ALPHA, CENTER, data_df, NEON_GREEN)
     # draw_target(distance, ALPHA, angle)
 
     # Flip the display
