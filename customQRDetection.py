@@ -1,7 +1,7 @@
 import numpy as np
 import cv2
 from pyzbar.pyzbar import decode
-images = ['qrArmario25cm.jpg', 'qrArmario120cm.jpg', 'qrArmario240cm.jpg', 'qrArmario280cm.jpg', 'qrArmarioCote.jpg', 'qrArmarioOffset.jpg', '3qrs.jpg', '2qrs.jpg']
+images = ['qrArmario25cm.jpg', 'qrArmario120cm.jpg', 'qrArmario240cm.jpg', 'qrArmario280cm.jpg', 'qrArmarioCote.jpg', 'qrArmarioOffset.jpg', '3qrs.jpg', '2qrs.jpg', '122cm-6degrees3qrs.jpg', '174cm24degrees2qrs.jpg', '153cm-15degrees2qrs.jpg']
 # images = ['qrArmarioOffet.jpg', '3qrs.jpg', '2qrs.jpg']
 WIDTH = 1280
 HEIGHT = 960
@@ -81,7 +81,7 @@ def get_beta_degrees(point):
 def get_processed_image(rgb_image):
     gray_image = cv2.cvtColor(rgb_image, cv2.COLOR_RGB2GRAY)
     blur_image = cv2.GaussianBlur(gray_image,(5,5),0)
-    ret3,th_image = cv2.threshold(blur_image,0,255,cv2.THRESH_BINARY+cv2.THRESH_OTSU)
+    _,th_image = cv2.threshold(blur_image,0,255,cv2.THRESH_BINARY+cv2.THRESH_OTSU)
     return th_image
 
 def add_points_to_image(image, polygon):
@@ -105,7 +105,7 @@ def add_points_to_image(image, polygon):
 
 def save_image_with_marked_qrs(rgb_image, name):
     processed_image = get_processed_image(rgb_image)
-    decoded_qrs = decode(th3)
+    decoded_qrs = decode(processed_image)
     polygons = [decoded_qr.polygon for decoded_qr in decoded_qrs]
     for polygon in polygons:
         rgb_image = add_points_to_image(rgb_image, polygon)
@@ -117,11 +117,43 @@ def write_data(file, data):
     f = open(file, "w")
     f.write("id,distance,angle\n")
     for elem in data:
-        id = elem['id'].decode("utf-8").replace("buenas buenas", "10")
+        id = elem['id']
         distance = elem['distance']
         angle = elem['angle']
-        f.write(f"\"{id}\",{distance},{angle}\n")
+        f.write("\"{}\",{},{}\n".format(id, distance, angle))
     f.close()
+
+def process_image(image):
+    '''
+    Receives a grayscale image returns the info of found qrs. It also updates sharedFile.csv if you are running sonar.py.
+
+    Input: np.array
+    Output: [qr_data]
+    qr_data:
+    {
+        'id': int,
+        'distance': int,
+        'angle': int
+    } 
+    '''
+    blur = cv2.GaussianBlur(image,(5,5),0)
+    _,th3 = cv2.threshold(blur,0,255,cv2.THRESH_BINARY+cv2.THRESH_OTSU)
+    decoded_qrs = decode(th3)
+    qrs_data = []
+
+    for decoded_qr in decoded_qrs:
+        polygon = decoded_qr.polygon
+        qr_center_relative_to_image_center = get_qr_center_relative_to_image_center(polygon)
+        alpha_degrees = get_alpha_degrees(qr_center_relative_to_image_center)
+        distance = get_distance(polygon)
+        qrs_data.append({
+                'id': int(decoded_qr.data.decode("utf-8").replace("buenas buenas", "10")),
+                'distance': round(distance),
+                'angle': round(alpha_degrees)
+            })
+    write_data(SHARED_FILE, qrs_data)
+    return qrs_data
+
 
 if __name__ == "__main__":
     for image in images:
@@ -148,9 +180,9 @@ if __name__ == "__main__":
             distance = get_distance(polygon)
             
 
-            print(f"{get_top_left(polygon)=}")
+            print("top left: {}".format(get_top_left(polygon)))
             print(str(decodedElem.data))
-            print(f"{qr_center_relative_to_image_center=}, {alpha=}, {alpha_degrees=}, {beta=}, {beta_degrees=}, {distance=}")
+            # print(f"{qr_center_relative_to_image_center=}, {alpha=}, {alpha_degrees=}, {beta=}, {beta_degrees=}, {distance=}")
             data.append({
                 'id': decodedElem.data,
                 'distance': round(distance),

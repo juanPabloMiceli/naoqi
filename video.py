@@ -5,16 +5,18 @@
 #     called "LandmarkDetected"
 # - We then read this AlMemory value and check whether we get
 #   interesting things.
-import time
-from naoqi import ALProxy
-import qi
-import sys
-from os.path import exists
-import math
 import argparse
+import math
+import sys
+import time
+from os.path import exists
+
 import numpy as np
-import cv2
-from customQRDetection import save_image_with_marked_qrs
+import qi
+
+from customQRDetection import process_image
+from naoqi import ALProxy
+
 
 def disable_basic_awareness(session):
     ba_service = session.service("ALBasicAwareness")
@@ -81,29 +83,6 @@ def get_proxy(proxyName, ip, port):
         exit(1)
     return proxy
 
-class ReadingData:
-    
-    def __init__(self, ID, landmark_shape_info, args):
-        self.ID = ID
-        self.alpha = landmark_shape_info[1]
-        self.alphaD = math.degrees(self.alpha)
-        self.beta = landmark_shape_info[2]
-        self.betaD = math.degrees(self.beta)
-        self.width = landmark_shape_info[3]
-        self.widthD = math.degrees(self.width)
-        self.height = landmark_shape_info[4]
-        self.heightD = math.degrees(self.height)
-        self.landmark_diameter = args.landmark_diameter
-        self.actual_distance = args.actual_distance
-        self.torso_orientation = args.torso_orientation
-        self.measured_distance = self.landmark_diameter / (2 * math.tan(self.height / 2))
-
-    def __str__(self):
-        return "ID: {}, alpha: {}, alphaD: {}, beta: {}, betaD: {}, width: {}, widthD: {}, height: {}, heightD: {}, landmark_diameter: {}, actual_distance: {}, measured_distance: {}, torso_orientation: {}".format(self.ID, self.alpha, self.alphaD, self.beta, self.betaD, self.width, self.widthD, self.height, self.heightD, self.landmark_diameter, self.actual_distance, self.measured_distance, self.torso_orientation)
-    
-    def csvString(self):
-        return "{},{},{},{},{},{},{},{},{},{},{},{},{}".format(self.ID, self.alpha, self.alphaD, self.beta, self.betaD, self.width, self.widthD, self.height, self.heightD, self.landmark_diameter, self.actual_distance, self.measured_distance, self.torso_orientation)
-
 
 def main(session, args):
 
@@ -113,135 +92,47 @@ def main(session, args):
     # Look at some angle for finding the landmark
     look_at(0, "right")
 
-    # Create a proxy to ALLandMarkDetection
-    landMarkProxy = get_proxy("ALLandMarkDetection", args.ip, args.port)
-
     videoDeviceProxy = get_proxy("ALVideoDevice", args.ip, args.port)
+    videoId = videoDeviceProxy.subscribeCamera("My_Test_Video", 0, 3, 8, 1)
 
-    videoId = videoDeviceProxy.subscribeCamera("My_Test_Video", 0, 3, 13, 1)
-    # print(videoId)
-    # Subscribe to the ALLandMarkDetection proxy
-    # This means that the module will write in ALMemory with
-    # the given period below
-    period = 500
-    landMarkProxy.subscribe("Test_LandMark", period, 0.0)
+    while True:
+        try: 
+            time.sleep(1)
+            container = videoDeviceProxy.getImageRemote(videoId)
 
-    # ALMemory variable where the ALLandMarkdetection module
-    # outputs its results
-    memKey = "LandmarkDetected"
+            image = map(ord, container[6])
+            image_array = np.array(image, dtype=np.uint8)
+            image_array = image_array.reshape(960,1280)
 
-    # Create a proxy to ALMemory
-    memoryProxy = get_proxy("ALMemory", args.ip, args.port)
+            print("id: " + str(container[7]))
+            qrs_data = process_image(image_array)
+            if len(qrs_data) > 1:
+                qr1 = qrs_data[0]
+                qr2 = qrs_data[1] #Cambiar los signos de angle (math.atan2(y,x))
+                print("qr1: {}, qr2: {}".format(qr1, qr2))
+                point_qr1 = np.array([qr1['distance'] * math.cos(math.radians(-qr1['angle'])), qr1['distance'] * math.sin(math.radians(-qr1['angle']))])
+                point_qr2 = np.array([qr2['distance'] * math.cos(math.radians(-qr2['angle'])), qr2['distance'] * math.sin(math.radians(-qr2['angle']))])
+                qr2_qr1_distance = np.linalg.norm(np.subtract(point_qr2, point_qr1))
+                print("Dist ({})_({}) = {}".format(qr1['id'], qr2['id'], qr2_qr1_distance))
+        except KeyboardInterrupt:
+            videoDeviceProxy.unsubscribe("My_Test_Video")
 
-    # A simple loop that reads the memKey and checks
-    # whether landmarks are detected.
-    currentReadings = []
-    totalTries = 0
-    while True or (totalTries < (args.measurings * 3) and len(currentReadings) < args.measurings):
-        time.sleep(2)
-        container = videoDeviceProxy.getImageRemote("My_Test_Video_0")
-        print("width: " + str(container[0]))
-        print("height: " + str(container[1]))
-        print("number of layers: " + str(container[2]))
-        print("colorSpace: " + str(container[3]))
-        print("image len: " + str(len(container[6])))
-        image = map(ord, container[6])
-        image_array = np.array(image, dtype=np.uint8)
-        image_array = image_array.reshape(960,1280,3)
-        save_image_with_marked_qrs(image_array, "imagen_" + str(totalTries) + ".jpg")
-
-        print("id: " + str(container[7]))
-        val = memoryProxy.getData(memKey, 0)
-        # Check whether we got a valid output: a list with two fields.
-        if(val and isinstance(val, list) and len(val) >= 2):
-            # We detected landmarks !
-            # Second Field = array of Mark_Info's.
-            markInfoArray = val[1]
-            print("val: ")
-            print(val)
-
-            try:
-                # Browse the markInfoArray to get info on each detected mark.
-                for markInfo in markInfoArray:
-                    # First Field = Shape info.
-                    markShapeInfo = markInfo[0]
-                    markID = markInfo[1][0]
-                    readingData = ReadingData(markID, markShapeInfo, args)
-                    currentReadings.append(readingData)
-
-                    # Print Mark information.
-                    print(readingData)
-            except Exception as e:
-                print("Landmarks detected, but it seems getData is invalid. ALValue =")
-                print(val)
-                print("Error msg %s" % (str(e)))
-        else:
-            print("Error with getData. ALValue = %s" % (str(val)))
-        totalTries = totalTries + 1
-
-    # Unsubscribe from the module.
-    landMarkProxy.unsubscribe("Test_LandMark")
-    if len(currentReadings) < args.measurings:
-        print("Measuring goal could not be achieved ({} of {})".format(len(currentReadings), args.measurings))
-        exit(1)
-    print("Readings finished successfully")
-    
-    if not args.out == "":
-        print("Writing to csv...")
-        f = open(args.out, "a")
-        for reading in currentReadings:
-            f.write(reading.csvString()+"\n")
-        f.close()
-            
-
-def check_args(args):
-    if args.out == "":
-        return
-    if not exists(args.out):
-        print("Please provide an existent csv with the following columns:\n"+
-              "ID,alpha,alphaD,beta,betaD,width,widthD,height,heightD,landmark_diameter,actual_distance,measured_distance,torso_orientation")
-        exit(1)
-    if (args.landmark_diameter == 0.0):
-        print("If you want to write into a file, please provide --landmark_diameter")
-        exit(1)
-    if(args.landmark_diameter < 0.0):
-        print("--landmark_diameter must be greater than 0")
-        exit(1)
-    if (args.actual_distance == 0.0):
-        print("If you want to write into a file, please provide --actual_distance")
-        exit(1)
-    if(args.actual_distance < 0.0):
-        print("--actual_distance must be greater than 0")
-        exit(1)
-    if (args.torso_orientation not in ["TL", "SL", "F", "SR", "TR"]):
-        print("If you want to write into a file, please provide one of the following --torso_orientation (TL, SL, F, SR, TR)")
-        exit(1)
+            print("Correctly unsuscribed!")
+            print("Exiting the program!")
+            sys.exit(0)
 
 
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("--ip", type=str, default="127.0.0.1",
+    parser.add_argument("--ip", type=str, default="192.168.0.171",
                         help="Robot IP address. On robot or Local Naoqi: use '127.0.0.1'.")
     parser.add_argument("--port", type=int, default=9559,
                         help="Naoqi port number")
-    parser.add_argument("--out", type=str, default="",
-                        help="Output file for throwing the readings, if not passed no file will be created")
-    parser.add_argument("--landmark_diameter", type=float, default=0.0,
-                        help="Landmark diameter (cm) for throwing at the csv and calculating the distance, not required if --out not especified")
-    parser.add_argument("--actual_distance", type=float, default=0.0,
-                        help="Distance to the landmark (cm) for throwing at the csv, not required if --out not especified")
-    parser.add_argument("--torso_orientation", type=str, default="",
-                        help="Orientation of the torso respect to the landmark for throwing at the csv, not required if --out not especified.\n"+
-                             "Please use: TL, SL, F, SR, TR. (total left, semi left, front, semi right, total right)")
-    parser.add_argument("--measurings", type=int, default=10,
-                        help="Total measurings for throwing at the csv, default is 10.\n"+
-                             "If goal can not be achieved, csv is not written.")
 
     args = parser.parse_args()
 
     # Check there is nothing invalid in the arguments received
-    check_args(args)
 
     # Init session
     session = qi.Session()

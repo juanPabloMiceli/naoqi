@@ -1,1 +1,3 @@
 naoSDKPython/
+**/*.pyc
+__pycache__
