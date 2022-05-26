@@ -1,12 +1,13 @@
 import numpy as np
 import cv2
 from pyzbar.pyzbar import decode
-# images = ['qrArmario25cm.jpg', 'qrArmario120cm.jpg', 'qrArmario240cm.jpg', 'qrArmario280cm.jpg', 'qrArmarioCote.jpg']
-images = ['3qrs.jpg', '2qrs.jpg']
+images = ['qrArmario25cm.jpg', 'qrArmario120cm.jpg', 'qrArmario240cm.jpg', 'qrArmario280cm.jpg', 'qrArmarioCote.jpg', 'qrArmarioOffset.jpg', '3qrs.jpg', '2qrs.jpg']
+# images = ['qrArmarioOffet.jpg', '3qrs.jpg', '2qrs.jpg']
 WIDTH = 1280
 HEIGHT = 960
 CONSTANT = 0.8495
 QR_HEIGHT = 18
+SHARED_FILE = "sharedFile.csv"
 
 def get_distance(polygon):
     middle_top = get_middle_top(polygon)
@@ -112,7 +113,15 @@ def save_image_with_marked_qrs(rgb_image, name):
     print("Image " + name + " correctly saved.")
 
 
-
+def write_data(file, data):
+    f = open(file, "w")
+    f.write("id,distance,angle\n")
+    for elem in data:
+        id = elem['id'].decode("utf-8").replace("buenas buenas", "10")
+        distance = elem['distance']
+        angle = elem['angle']
+        f.write(f"\"{id}\",{distance},{angle}\n")
+    f.close()
 
 if __name__ == "__main__":
     for image in images:
@@ -121,6 +130,7 @@ if __name__ == "__main__":
         _,th3 = cv2.threshold(blur,0,255,cv2.THRESH_BINARY+cv2.THRESH_OTSU)
         decoded = decode(th3)
         img2 = cv2.imread("images/"+image)
+        data = []
 
         for decodedElem in decoded:
             
@@ -141,6 +151,11 @@ if __name__ == "__main__":
             print(f"{get_top_left(polygon)=}")
             print(str(decodedElem.data))
             print(f"{qr_center_relative_to_image_center=}, {alpha=}, {alpha_degrees=}, {beta=}, {beta_degrees=}, {distance=}")
+            data.append({
+                'id': decodedElem.data,
+                'distance': round(distance),
+                'angle': round(alpha_degrees)
+            })
             image = cv2.polylines(img2, np.array([polygon]), True, (255,0,0))
             image = cv2.circle(image, (get_top_left(polygon)[0], get_top_left(polygon)[1]), radius=0, color=(0, 0, 255), thickness=5)
             image = cv2.circle(image, (get_top_right(polygon)[0], get_top_right(polygon)[1]), radius=0, color=(0, 255, 0), thickness=5)
@@ -151,6 +166,7 @@ if __name__ == "__main__":
             image = cv2.circle(image, (qr_center[0], qr_center[1]), radius=0, color=(0, 255, 255), thickness=5) # Center
             # Center of image
             image = cv2.circle(image, (WIDTH//2, HEIGHT//2), radius=0, color=(255, 255, 0), thickness=5)
+        write_data(SHARED_FILE, data)
         cv2.imshow('image', image)
         cv2.waitKey(0)
         # and finally destroy/close all open windows
