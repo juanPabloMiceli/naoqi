@@ -1,0 +1,55 @@
+from head_controller import HeadController
+from nao_properties import NaoProperties
+import qi
+import argparse
+
+from awareness_controller import AwarenessController
+from naoqi import ALProxy
+
+class PhotoController:
+
+    def __init__(self, ip, port):
+        try:
+            self.proxy = ALProxy("ALPhotoCapture", ip, port)
+        except Exception as e:
+            print("Error when creating ALPhotoCapture proxy")
+            print(str(e))
+            exit(1)
+        
+    def save_picture(self, resolution, format, name):
+        self.proxy.setResolution(resolution)
+        self.proxy.setPictureFormat(format)
+        self.proxy.takePictures(1, "/home/nao/pictures/", name)
+        
+if __name__ == "__main__":
+
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--out", type=str, required=True,
+                        help="Name of the picture saved.")
+
+    args = parser.parse_args()
+    OUT = args.out
+    IP, PORT = NaoProperties().get_connection_properties()
+
+    session = qi.Session()
+    session.connect("tcp://" + IP + ":" + str(PORT))
+    
+    AwarenessController(session).set(False)
+    HeadController(session).look_at(0, 0)
+    PhotoController(IP, PORT).save_picture(3, "jpg", OUT)
+
+
+
+''' Resolution table
+|   8   |  40x30px  |
+---------------------
+|   7   |  80x60px  |
+---------------------
+|   0   | 160x120px |
+---------------------
+|   1   | 320x240px |
+---------------------
+|   2   | 640x480px |
+---------------------
+|   3   |1280x960px |
+'''
