@@ -1,21 +1,16 @@
 from head_controller import HeadController
 from nao_properties import NaoProperties
+from proxy_factory import ProxyFactory
 import qi
 import argparse
 
 from awareness_controller import AwarenessController
-from naoqi import ALProxy
 
 class PhotoController:
 
     def __init__(self, ip, port):
-        try:
-            self.proxy = ALProxy("ALPhotoCapture", ip, port)
-        except Exception as e:
-            print("Error when creating ALPhotoCapture proxy")
-            print(str(e))
-            exit(1)
-        
+        self.proxy = ProxyFactory.get_proxy("ALPhotoCapture", ip, port)
+
     def save_picture(self, resolution, format, name):
         self.proxy.setResolution(resolution)
         self.proxy.setPictureFormat(format)

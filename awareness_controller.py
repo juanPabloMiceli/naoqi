@@ -18,6 +18,9 @@ class AwarenessController:
         self.service = session.service("ALBasicAwareness")
     
     def set(self, new_state):
+        '''
+        Sets the awareness to the received boolean value
+        '''
         self.service.startAwareness() if new_state else self.service.stopAwareness() 
     
     def get(self):

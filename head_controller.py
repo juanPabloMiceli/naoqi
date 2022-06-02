@@ -49,6 +49,9 @@ class HeadController:
         self.service.angleInterpolationWithSpeed(joint_names,joint_angles, speed)
         return True
 
+    def look_front(self):
+        self.look_at(0, 0)
+
 if __name__ == "__main__":
 
     parser = argparse.ArgumentParser()

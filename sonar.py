@@ -4,6 +4,8 @@ import pygame
 import time
 import os
 
+from sonar_adapter import SonarAdapter
+
 
 pygame.init()
 
@@ -14,16 +16,9 @@ ALPHA = 0
 CIRCLE_DISTANCE = 50
 BACKGROUND_COLOR = (0,0,0)
 TOTAL_CIRCLES = 6
-SHARED_FILE = "sharedFile.csv"
-LAST_DATA_TIME = time.time()
 NEON_GREEN = (57, 255, 20)
 
-
 screen = pygame.display.set_mode([WIDTH, WIDTH])
-
-
-distance = 110
-angle = 45
 
 def get_line_end(start, length_cm, angle_degrees):
     angle_radians = math.radians(angle_degrees+90)
@@ -76,10 +71,6 @@ def draw_qrs(screen, alpha, center, data_df, color):
     draw_targets(screen, alpha, center, data_df, color)
     draw_targets_info(screen, alpha, center, data_df, color)
 
-def data_changed(file, last_time_data):
-    return last_time_data < os.path.getmtime(file)
-
-
 def update_display_angle(angle):
     keys = pygame.key.get_pressed()
     if keys[pygame.K_RIGHT]:
@@ -102,13 +93,10 @@ def draw_robot(screen, center, alpha):
 def retrieve_data(file):
     return pd.read_csv(file)
 
-# Run until the user asks to quit
-def clean_file(file):
-    f = open(file, "w")
-    f.write("id,distance,angle\n")
-    f.close()
-# Path(SHARED_FILE).touch()
-clean_file(SHARED_FILE)
+
+# clean_file(SHARED_FILE)
+sonar_adapter = SonarAdapter()
+
 running = True
 while running:
 
@@ -124,13 +112,10 @@ while running:
 
     draw_sonar_circles(screen, CIRCLE_DISTANCE, TOTAL_CIRCLES, CENTER, NEON_GREEN)
     draw_robot(screen, CENTER, ALPHA)
-    # data_df = pd.DataFrame([])
-    if data_changed(SHARED_FILE, LAST_DATA_TIME):
-        data_df = retrieve_data(SHARED_FILE)
-        LAST_DATA_TIME = time.time()  
+    if sonar_adapter.has_new_data:
+        data_df = sonar_adapter.get_data()
 
     draw_qrs(screen, ALPHA, CENTER, data_df, NEON_GREEN)
-    # draw_target(distance, ALPHA, angle)
 
     # Flip the display
     pygame.display.flip()
