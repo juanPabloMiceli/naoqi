@@ -78,7 +78,7 @@ class VideoController:
 if __name__ == "__main__":
     
 
-    IP, PORT = NaoProperties.get_connection_properties()
+    IP, PORT = NaoProperties().get_connection_properties()
     video_controller = VideoController(IP, PORT)
 
     while True:

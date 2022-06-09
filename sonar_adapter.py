@@ -22,7 +22,7 @@ class SonarAdapter:
         f = open(self.shared_file, "w")
         f.write("id,distance,angle\n")
         for elem in data:
-            f.write("\"{}\",{},{}\n".format(data.id, data.distance, data.angle))
+            f.write("\"{}\",{},{}\n".format(elem.id, elem.distance, elem.angle))
         f.close()
 
     def has_new_data(self):
