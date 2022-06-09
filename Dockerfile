@@ -28,6 +28,9 @@ RUN apt-get install libzbar0
 RUN apt-get install python-pip -y
 RUN pip install pyzbar
 
+# Instalo pandas para usar el sonar adapter
+RUN pip install pandas==0.23.1
+
 WORKDIR /app
 
 CMD ["/bin/bash"]
