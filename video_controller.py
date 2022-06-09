@@ -9,6 +9,7 @@ import time
 from os.path import exists
 
 import numpy as np
+from logger_factory import LoggerFactory
 from nao_properties import NaoProperties
 
 from proxy_factory import ProxyFactory
@@ -29,6 +30,8 @@ class ImageContainer:
     # [9]: topAngle (radian).
     # [10]: rightAngle (radian).
     # [11]: bottomAngle (radian).
+    LOGGER = LoggerFactory.get_logger("ImageContainer")
+
 
 
     def __init__(self, image_container_array):
@@ -44,6 +47,7 @@ class ImageContainer:
     def get_cv2_image(self):
         image_array = map(ord, self.b_array)
         cv2_image = np.array(image_array, dtype=np.uint8)
+        self.LOGGER.info("width: {}, height: {}".format(self.width, self.height))
         cv2_image = cv2_image.reshape(960,1280)
         return cv2_image
 
@@ -51,28 +55,24 @@ class ImageContainer:
 class VideoController:
     '''
     Works with gray images of size 1280x960
-    '''
-    video_id = None
-    image_width = 1280
-    image_height = 960
+    '''    
 
     def __init__(self, ip, port):
+        self.image_width = 1280
+        self.image_height = 960
+        self.LOGGER = LoggerFactory.get_logger("VideoController")
         self.proxy = ProxyFactory.get_proxy("ALVideoDevice", ip, port)
-        subscribers = self.proxy.getSubscribers()
-        if len(subscribers) == 0:
-            self.video_id = self.proxy.subscribeCamera("My_Test_Video", 0, 3, 8, 1)
-            print("Generated new video id {}".format(self.video_id))
-        else:
-            self.video_id = subscribers[0]
-            print("Recycling video id {}".format(self.video_id))
+        self.video_id = self.proxy.subscribeCamera("My_Test_Video", 0, 3, 8, 1)
+        self.LOGGER.info("Generated new video id {}".format(self.video_id))
+        
 
     def get_current_image(self):
         image_container = ImageContainer(self.proxy.getImageRemote(self.video_id))
         return image_container.get_cv2_image()
     
     def __del__(self):
-        self.proxy.unsubscribe("My_Test_Video")
-        print("Correctly unsuscribed!")
+        self.proxy.unsubscribe(self.video_id)
+        self.LOGGER.info("Correctly unsuscribed!")
 
 
 if __name__ == "__main__":
