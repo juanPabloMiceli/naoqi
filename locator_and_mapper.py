@@ -13,8 +13,6 @@ class QrLocation:
 class LocatorAndMapper:
 
     qrs_data = np.array([])
-    map_axis = None
-    map_axis_zero = None
     LOGGER = LoggerFactory.get_logger("LOGGER")
     nao_location = None
 
@@ -33,15 +31,8 @@ class LocatorAndMapper:
             point_qr2 = pol2cart(qr2.distance, math.radians(-qr2.angle))
 
             qr2_qr1_distance = distance(point_qr1, point_qr2)
-            x_dir = direction(point_qr1, point_qr2)
-            y_dir = np.array([-x_dir[1], x_dir[0]])
-            self.map_axis = np.array([x_dir, y_dir])
-            self.map_axis_zero = point_qr1
-            angle_between_coordinates = angle(self.map_axis[0])
-            self.LOGGER.info("Dist: {}".format(qr2_qr1_distance))
-            
-            self.__add_qr_to_map(point_qr1, qr1.id, angle_between_coordinates)
-            self.__add_qr_to_map(point_qr2, qr2.id, angle_between_coordinates)
+            self.__add_qr_to_map(np.array([0,0]), qr1.id)
+            self.__add_qr_to_map(np.array([qr2_qr1_distance,0]), qr2.id)
             
         # Procedimiento general
         known_qrs_indices = self.__get_known_qrs_indices(new_qrs_data)
@@ -81,8 +72,8 @@ class LocatorAndMapper:
         qr2_qr1_angle_map = angle(qr2_qr1_map)
 
         qr1_nao_map_length = qr1.distance
-        qr1_nao_map_angle = (-np.radians(-qr1.angle) - qr2_qr1_angle_map + qr2_qr1_angle_torso) * -1
-
+        qr1_nao_map_angle = qr2_qr1_angle_map - qr2_qr1_angle_torso + np.radians(-qr1.angle)
+        
         qr1_nao_map = pol2cart(qr1_nao_map_length, qr1_nao_map_angle)
 
         nao_location = np.subtract(point_qr1_map, qr1_nao_map) 
@@ -91,8 +82,8 @@ class LocatorAndMapper:
 
         return nao_location
 
-    def __add_qr_to_map(self, point, id, angle_between_coordinates):
-        self.qrs_data = np.append(self.qrs_data, QrLocation(transformed_point(point, self.map_axis_zero, angle_between_coordinates), id))
+    def __add_qr_to_map(self, point, id):
+        self.qrs_data = np.append(self.qrs_data, QrLocation(point, id))
 
     def __get_known_qrs_indices(self, new_qrs_data):
         known_qrs = []
@@ -118,7 +109,7 @@ class LocatorAndMapper:
         
         return np.array(new_qrs)
 
-    def __add_new_qrs(self, new_qrs_data, nao_location, known_qrs_indices):
+    def __add_new_qrs(self, new_qrs_data, nao_location, known_qrs_indices, qr1_qr2_torso_angle, qr1_qr2_map_angle):
         new_qrs_indices = self.__get_new_qrs_indices(new_qrs_data)
 
         qr1 = new_qrs_data[known_qrs_indices[0]]
@@ -126,10 +117,9 @@ class LocatorAndMapper:
 
         # New QR angle in map coords is the sum of the new QR angle in NAO coords and NAO angle in map coords.
         # Nao angle in map coords is the sum of the angle of the known QRs in the map coords and the angle of the known QRs in NAO coords
-
-
-        gamma = np.arctan2()
-
-        for new_qr_index in new_qrs_indices:
-            new_qr_data = new_qrs_data[new_qr_index]
+        new_qrs = ...
+        for new_qr in new_qrs:
+            new_qr_map_angle = np.radians(-new_qr.angle) - qr1_qr2_torso_angle + qr1_qr2_map_angle
+            new_qr_v = pol2cart(new_qr.distance, new_qr_map_angle)
+            add_new_qr(QrLocation(np.add(nao_location, new_qr_v), new_qr.id))
 
