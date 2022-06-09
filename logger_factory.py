@@ -7,7 +7,7 @@ class LoggerFactory:
     @staticmethod
     def get_logger(logger_name):
         logger = logging.getLogger(logger_name)
-        logger.setLevel(logging.INFO) # better to have too much log than not enough
+        logger.setLevel(logging.INFO)
         logger.addHandler(LoggerFactory.__get_console_handler())
         return logger
 
