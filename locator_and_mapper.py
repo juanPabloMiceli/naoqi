@@ -32,7 +32,7 @@ class LocatorAndMapper:
 
             qr2_qr1_distance = distance(point_qr1, point_qr2)
             self.__add_qr_to_map(np.array([0,0]), qr1.id)
-            self.__add_qr_to_map(np.array([qr2_qr1_distance,0]), qr2.id)
+            self.__add_qr_to_map(np.array([round(qr2_qr1_distance, 3),0]), qr2.id)
             
         # Procedimiento general
         known_qrs_indices = self.__get_known_qrs_indices(new_qrs_data)
@@ -77,7 +77,8 @@ class LocatorAndMapper:
         qr1_nao_map = pol2cart(qr1_nao_map_length, qr1_nao_map_angle)
 
         nao_location = np.subtract(point_qr1_map, qr1_nao_map) 
-
+        nao_location = np.vectorize(lambda n: round(n, 3))(nao_location)
+        nao_location[0] = round(nao_location[0], )
         self.LOGGER.info("Nao location: {}".format(nao_location))
 
         return nao_location
@@ -109,17 +110,17 @@ class LocatorAndMapper:
         
         return np.array(new_qrs)
 
-    def __add_new_qrs(self, new_qrs_data, nao_location, known_qrs_indices, qr1_qr2_torso_angle, qr1_qr2_map_angle):
-        new_qrs_indices = self.__get_new_qrs_indices(new_qrs_data)
+    # def __add_new_qrs(self, new_qrs_data, nao_location, known_qrs_indices, qr1_qr2_torso_angle, qr1_qr2_map_angle):
+    #     new_qrs_indices = self.__get_new_qrs_indices(new_qrs_data)
 
-        qr1 = new_qrs_data[known_qrs_indices[0]]
-        qr2 = new_qrs_data[known_qrs_indices[1]]
+    #     qr1 = new_qrs_data[known_qrs_indices[0]]
+    #     qr2 = new_qrs_data[known_qrs_indices[1]]
 
-        # New QR angle in map coords is the sum of the new QR angle in NAO coords and NAO angle in map coords.
-        # Nao angle in map coords is the sum of the angle of the known QRs in the map coords and the angle of the known QRs in NAO coords
-        new_qrs = ...
-        for new_qr in new_qrs:
-            new_qr_map_angle = np.radians(-new_qr.angle) - qr1_qr2_torso_angle + qr1_qr2_map_angle
-            new_qr_v = pol2cart(new_qr.distance, new_qr_map_angle)
-            add_new_qr(QrLocation(np.add(nao_location, new_qr_v), new_qr.id))
+    #     # New QR angle in map coords is the sum of the new QR angle in NAO coords and NAO angle in map coords.
+    #     # Nao angle in map coords is the sum of the angle of the known QRs in the map coords and the angle of the known QRs in NAO coords
+    #     new_qrs = ...
+    #     for new_qr in new_qrs:
+    #         new_qr_map_angle = np.radians(-new_qr.angle) - qr1_qr2_torso_angle + qr1_qr2_map_angle
+    #         new_qr_v = pol2cart(new_qr.distance, new_qr_map_angle)
+    #         add_new_qr(QrLocation(np.add(nao_location, new_qr_v), new_qr.id))
 

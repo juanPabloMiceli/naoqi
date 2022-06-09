@@ -75,8 +75,8 @@ class QrDetector:
             qr_data:
             {
                 'id': int,
-                'distance': int,
-                'angle': int
+                'distance': float,
+                'angle': float
             } 
         '''
         desired_shape = (QrDetector.HEIGHT, QrDetector.WIDTH)
@@ -93,7 +93,7 @@ class QrDetector:
             qr_center_relative_to_image_center = QrDetector.__relative_to_image_center(qr_points.center)
             alpha_degrees = QrDetector.__get_alpha_degrees(qr_center_relative_to_image_center)
             distance = QrDetector.__get_distance(qr_points)
-            qrs_data.append(QrData(int(decoded_qr.data.decode("utf-8").replace("buenas buenas", "10")), round(distance), round(alpha_degrees)))
+            qrs_data.append(QrData(int(decoded_qr.data.decode("utf-8").replace("buenas buenas", "10")), round(distance, 3), round(alpha_degrees, 3)))
         return qrs_data
 
 

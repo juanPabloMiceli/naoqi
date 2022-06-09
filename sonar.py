@@ -64,7 +64,7 @@ def draw_target_info(screen, alpha, center, counter, color, distance, angle, id)
 def draw_targets_info(screen, alpha, center, data_df, color):
     counter = 0
     for _, data_elem in data_df.iterrows():
-        draw_target_info(screen, alpha, center, counter, color, data_elem['distance'].astype(int).astype(str), data_elem['angle'].astype(int).astype(str), data_elem['id'].astype(int).astype(str))
+        draw_target_info(screen, alpha, center, counter, color, round(data_elem['distance'], 3).astype(str), round(data_elem['angle'], 3).astype(str), data_elem['id'].astype(int).astype(str))
         counter += 1
 
 def draw_qrs(screen, alpha, center, data_df, color):
