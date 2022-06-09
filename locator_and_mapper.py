@@ -10,6 +10,12 @@ class QrLocation:
         self.point = point
         self.id = id
 
+    def __str__(self):
+        return "({}): [{},{}]".format(self.id, self.point[0], self.point[1])
+
+    def __repr__(self):
+        return self.__str__()
+
 class LocatorAndMapper:
 
     qrs_data = np.array([])
@@ -38,7 +44,7 @@ class LocatorAndMapper:
         known_qrs_indices = self.__get_known_qrs_indices(new_qrs_data)
         if len(known_qrs_indices) == 2:
             self.nao_location = self.__get_nao_location(known_qrs_indices, new_qrs_data)
-            # self.__add_new_qrs(new_qrs_data, nao_location)
+            self.__add_new_qrs(new_qrs_data, known_qrs_indices)
     
         return self.get_nao_location()
 
@@ -51,15 +57,13 @@ class LocatorAndMapper:
     def __get_nao_location(self, known_qrs_indices, new_qrs_data):
         qr1 = new_qrs_data[known_qrs_indices[0]]
         qr2 = new_qrs_data[known_qrs_indices[1]]
-        qr1_id = qr1.id
-        qr2_id = qr2.id
 
-        self.LOGGER.info("Getting Nao location, chose qrs {} and {}".format(qr1_id, qr2_id))
+        self.LOGGER.info("Getting Nao location, chose qrs {} and {}".format(qr1.id, qr2.id))
 
         for qr_data in self.qrs_data:
-            if qr_data.id == qr1_id:
+            if qr_data.id == qr1.id:
                 point_qr1_map = qr_data.point
-            if qr_data.id == qr2_id:
+            if qr_data.id == qr2.id:
                 point_qr2_map = qr_data.point
 
         point_qr1_torso = pol2cart(qr1.distance, math.radians(-qr1.angle))
@@ -99,7 +103,7 @@ class LocatorAndMapper:
     def __get_new_qrs_indices(self, new_qrs_data):
         new_qrs = []
 
-        for index, new_qr_data in new_qrs_data:
+        for index, new_qr_data in enumerate(new_qrs_data):
             is_new = True
             for qr_data in self.qrs_data:
                 if new_qr_data.id == qr_data.id:
@@ -110,17 +114,34 @@ class LocatorAndMapper:
         
         return np.array(new_qrs)
 
-    # def __add_new_qrs(self, new_qrs_data, nao_location, known_qrs_indices, qr1_qr2_torso_angle, qr1_qr2_map_angle):
-    #     new_qrs_indices = self.__get_new_qrs_indices(new_qrs_data)
+    def __add_new_qrs(self, new_qrs_data, known_qrs_indices):
+        new_qrs_indices = self.__get_new_qrs_indices(new_qrs_data)
 
-    #     qr1 = new_qrs_data[known_qrs_indices[0]]
-    #     qr2 = new_qrs_data[known_qrs_indices[1]]
+        qr1 = new_qrs_data[known_qrs_indices[0]]
+        qr2 = new_qrs_data[known_qrs_indices[1]]
 
-    #     # New QR angle in map coords is the sum of the new QR angle in NAO coords and NAO angle in map coords.
-    #     # Nao angle in map coords is the sum of the angle of the known QRs in the map coords and the angle of the known QRs in NAO coords
-    #     new_qrs = ...
-    #     for new_qr in new_qrs:
-    #         new_qr_map_angle = np.radians(-new_qr.angle) - qr1_qr2_torso_angle + qr1_qr2_map_angle
-    #         new_qr_v = pol2cart(new_qr.distance, new_qr_map_angle)
-    #         add_new_qr(QrLocation(np.add(nao_location, new_qr_v), new_qr.id))
+        for qr_data in self.qrs_data:
+            if qr_data.id == qr1.id:
+                point_qr1_map = qr_data.point
+            if qr_data.id == qr2.id:
+                point_qr2_map = qr_data.point
+
+        for new_qr_index in new_qrs_indices:
+            new_qr_data = new_qrs_data[new_qr_index]
+
+            point_qr1_torso = pol2cart(qr1.distance, math.radians(-qr1.angle))
+            point_qr2_torso = pol2cart(qr2.distance, math.radians(-qr2.angle))
+
+            qr2_qr1_torso = direction(point_qr1_torso, point_qr2_torso) 
+            qr2_qr1_map = direction(point_qr1_map, point_qr2_map)
+
+            qr2_qr1_angle_torso = angle(qr2_qr1_torso)
+            qr2_qr1_angle_map = angle(qr2_qr1_map)
+
+            new_qr_nao_map_length = new_qr_data.distance
+            new_qr_nao_map_angle = np.radians(-new_qr_data.angle) - qr2_qr1_angle_torso + qr2_qr1_angle_map
+            new_qr_nao = pol2cart(new_qr_nao_map_length, new_qr_nao_map_angle)
+            new_qr = np.add(self.nao_location, new_qr_nao)
+            new_qr = np.vectorize(lambda n: round(n, 3))(new_qr)
+            self.__add_qr_to_map(new_qr, new_qr_data.id)
 
