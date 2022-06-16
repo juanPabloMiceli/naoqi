@@ -17,6 +17,7 @@ CIRCLE_DISTANCE = 50
 BACKGROUND_COLOR = (0,0,0)
 TOTAL_CIRCLES = 6
 NEON_GREEN = (57, 255, 20)
+ROBOT_COLOR = (255, 0, 0)
 
 screen = pygame.display.set_mode([WIDTH, WIDTH])
 
@@ -83,12 +84,11 @@ def update_display_angle(angle):
     return angle
 
 def draw_sonar_circles(screen, circle_distance, total_circles, center, color):
-    # Draw a solid blue circle in the center
     for i in range(1, total_circles + 1):
         pygame.draw.circle(screen, color, center, i * circle_distance, 1)
 
-def draw_robot(screen, center, alpha):
-    pygame.draw.line(screen, (255, 0, 0), center, get_line_end(center, 25, alpha), 2)
+def draw_robot(screen, color, center, alpha):
+    pygame.draw.line(screen, color, center, get_line_end(center, 25, alpha), 2)
 
 def retrieve_data(file):
     return pd.read_csv(file)
@@ -111,7 +111,7 @@ while running:
     screen.fill(BACKGROUND_COLOR)
 
     draw_sonar_circles(screen, CIRCLE_DISTANCE, TOTAL_CIRCLES, CENTER, NEON_GREEN)
-    draw_robot(screen, CENTER, ALPHA)
+    draw_robot(screen, ROBOT_COLOR, CENTER, ALPHA)
     if sonar_adapter.has_new_data:
         data_df = sonar_adapter.get_data()
 

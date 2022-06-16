@@ -4,6 +4,7 @@ import time
 import cv2
 import numpy as np
 from locator_and_mapper import LocatorAndMapper
+from map_display_adapter import MapDisplayAdapter
 from nao_properties import NaoProperties
 import qi
 
@@ -25,6 +26,7 @@ def main(session, ip, port):
 
     video_controller = VideoController(ip, port)
     sonar_adapter = SonarAdapter()
+    map_display_adapter = MapDisplayAdapter()
     locator_and_mapper = LocatorAndMapper()
     index = input("Insert index: ")
 
@@ -34,6 +36,7 @@ def main(session, ip, port):
         cv2_image = video_controller.get_current_image()
         qrs_data = QrDetector.get_qrs_information(cv2_image)
         sonar_adapter.write_data(qrs_data)
+        map_display_adapter.write_data(locator_and_mapper.get_nao_location(), locator_and_mapper.qrs_data)
         locator_and_mapper.add_information(qrs_data)
         time.sleep(1)
         index = input("Insert index: ")
