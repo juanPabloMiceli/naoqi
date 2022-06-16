@@ -1,7 +1,7 @@
 from logging import Logger
 import numpy as np
 import math
-from geometry import angle, angle_between_vectors, pol2cart, distance, direction, transformed_point
+from geometry import angle, pol2cart, distance, direction, transformed_point
 from logger_factory import LoggerFactory
 
 class QrLocation:
@@ -82,7 +82,6 @@ class LocatorAndMapper:
 
         nao_location = np.subtract(point_qr1_map, qr1_nao_map) 
         nao_location = np.vectorize(lambda n: round(n, 3))(nao_location)
-        nao_location[0] = round(nao_location[0], )
         self.LOGGER.info("Nao location: {}".format(nao_location))
 
         return nao_location
