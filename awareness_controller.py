@@ -15,16 +15,18 @@ from nao_properties import NaoProperties
 class AwarenessController:
     
     def __init__(self, session):
-        self.service = session.service("ALBasicAwareness")
+        self.basic_awareness_service = session.service("ALBasicAwareness")
+        self.background_movement_service = session.service("ALMotion")
     
     def set(self, new_state):
         '''
         Sets the awareness to the received boolean value
         '''
-        self.service.startAwareness() if new_state else self.service.stopAwareness() 
+        self.basic_awareness_service.startAwareness() if new_state else self.basic_awareness_service.stopAwareness() 
+        self.background_movement_service.setBreathEnabled("All", new_state) 
     
     def get(self):
-        return self.service.is_enabled()
+        return self.basic_awareness_service.is_enabled()
             
 
 if __name__ == "__main__":
