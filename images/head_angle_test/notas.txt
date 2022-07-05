@@ -1,0 +1,6 @@
+0-2: Sin inclinacion
+3-6: -2° eje vertical
+7-9: -1° eje vertical
+10-12: -1.5° eje vertical
+
+12 vs 13: Solo movi al nao a la izquierda 5cm y lo giré su torso levemente para que siga apuntando a los QRs.
