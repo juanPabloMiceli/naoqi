@@ -44,9 +44,10 @@ class MapDisplayAdapter:
     def write_data(self, robot_position, qrs_data):        
         f = open(self.shared_file, "w")
         f.write("id,x,y\n")
-        f.write("\"robot\",{},{}\n".format(robot_position[0], robot_position[1]))
+        if not robot_position == None: 
+            f.write("\"robot\",{},{}\n".format(robot_position[0], robot_position[1]))
         for elem in qrs_data:
-            f.write("\"{}\",{},{}\n".format(elem.id, elem.distance, elem.angle))
+            f.write("\"{}\",{},{}\n".format(elem.id, elem.point[0], elem.point[1]))
         f.close()
 
     def has_new_data(self):
