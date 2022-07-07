@@ -9,6 +9,7 @@ import time
 from os.path import exists
 
 import numpy as np
+import cv2
 from logger_factory import LoggerFactory
 from nao_properties import NaoProperties
 
@@ -48,25 +49,34 @@ class ImageContainer:
         image_array = map(ord, self.b_array)
         cv2_image = np.array(image_array, dtype=np.uint8)
         self.LOGGER.info("width: {}, height: {}".format(self.width, self.height))
-        cv2_image = cv2_image.reshape(960,1280)
+        cv2_image = cv2_image.reshape(960,1280,3)
         return cv2_image
 
 
 class VideoController:
     '''
-    Works with gray images of size 1280x960
-    '''    
-
+    Image size: 1280x960
+    Retrieved image format: BGR
+    '''  
+    
     def __init__(self, ip, port):
         self.image_width = 1280
         self.image_height = 960
         self.LOGGER = LoggerFactory.get_logger("VideoController")
         self.proxy = ProxyFactory.get_proxy("ALVideoDevice", ip, port)
-        self.video_id = self.proxy.subscribeCamera("My_Test_Video", 0, 3, 8, 1)
+        self.video_id = self.proxy.subscribeCamera("My_Test_Video", 0, 3, 11, 1)
         self.LOGGER.info("Generated new video id {}".format(self.video_id))
         
 
-    def get_current_image(self):
+    def get_current_gray_image(self):
+        image_container = ImageContainer(self.proxy.getImageRemote(self.video_id))
+        return cv2.cvtColor(image_container.get_cv2_image(), cv2.COLOR_BGR2GRAY)
+
+    def get_current_rgb_image(self):
+        image_container = ImageContainer(self.proxy.getImageRemote(self.video_id))
+        return cv2.cvtColor(image_container.get_cv2_image(), cv2.COLOR_BGR2RGB)  
+
+    def get_current_bgr_image(self):
         image_container = ImageContainer(self.proxy.getImageRemote(self.video_id))
         return image_container.get_cv2_image()
     
