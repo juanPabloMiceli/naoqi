@@ -13,7 +13,7 @@ from head_controller import HeadController
 from qr_detector import QrDetector
 from sonar_adapter import SonarAdapter
 from video_controller import VideoController
-from photo_saver import PhotoSaver
+from save_path_factory import SavePathFactory
 
 images = ['images/174cm24degrees2qrs.jpg', 'images/153cm-15degrees2qrs.jpg']
 
@@ -31,7 +31,7 @@ def main(session, ip, port):
     sonar_adapter = SonarAdapter()
     map_display_adapter = MapDisplayAdapter()
     locator_and_mapper = LocatorAndMapper()
-    photo_saver = PhotoSaver("images/head_angle_test/QRCenterVsImageCenter.jpg")
+    photo_saver = SavePathFactory("images/head_angle_test/QRCenterVsImageCenter.jpg")
 
     index = raw_input("Insert index: ")
 

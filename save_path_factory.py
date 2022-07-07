@@ -1,6 +1,6 @@
 from os.path import exists
 
-class PhotoSaver:
+class SavePathFactory:
     def __init__(self, main_path):
         self.main_path = main_path
 
