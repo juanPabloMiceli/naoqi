@@ -65,7 +65,8 @@ def draw_path(screen, center, path, color):
 
 
 map_display_adapter = MapDisplayAdapter()
-
+robot_position = (0,0)
+qrs_information = []
 running = True
 while running:
 
@@ -80,7 +81,8 @@ while running:
 
     draw_grid(screen, WIDTH, GRID_WIDTH, NEON_GREEN)
     
-    if map_display_adapter.has_new_data:
+    if map_display_adapter.has_new_data():
+        time.sleep(0.2)
         robot_position = map_display_adapter.get_robot_location()
         qrs_information = map_display_adapter.get_qrs_information()
         robot_path.append(robot_position)

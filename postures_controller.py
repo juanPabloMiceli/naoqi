@@ -1,6 +1,6 @@
 
 import qi
-import argparse
+from argparse import ArgumentParser, RawTextHelpFormatter
 import sys
 
 from nao_properties import NaoProperties
@@ -71,11 +71,10 @@ def main(session, posture):
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser()
+    parser = ArgumentParser(formatter_class=RawTextHelpFormatter)
     parser.add_argument("--posture", type=str, default="standInit",
-                        help="Robot goal posture. Default: StandInit")
-    parser.add_argument("--help", type=int, default=9559,
-                        help="Posible postures (case insensitive): \n" +
+                        help="Robot goal posture. Default: StandInit\n" +
+                             "Posible postures (case insensitive): \n" +
                              "StandInit \n" +
                              "SitRelax \n" +
                              "StandZero \n" +
@@ -83,7 +82,8 @@ if __name__ == "__main__":
                              "LyingBack \n" +
                              "Stand \n" +
                              "Crouch \n" +
-                             "Sit \n")
+                             "Sit \n"
+                        )
 
     
     IP, PORT = NaoProperties().get_connection_properties()

@@ -4,7 +4,7 @@ from pyzbar.pyzbar import decode
 
 from logger_factory import LoggerFactory
 
-images = ['qrArmario25cm.jpg', 'qrArmario120cm.jpg', 'qrArmario240cm.jpg', 'qrArmario280cm.jpg', 'qrArmarioCote.jpg', 'qrArmarioOffset.jpg', '3qrs.jpg', '2qrs.jpg', '122cm-6degrees3qrs.jpg', '174cm24degrees2qrs.jpg', '153cm-15degrees2qrs.jpg']
+images = ['baldoza360/intento3/original/out21.jpg']#, 'qrArmario120cm.jpg', 'qrArmario240cm.jpg', 'qrArmario280cm.jpg', 'qrArmarioCote.jpg', 'qrArmarioOffset.jpg', '3qrs.jpg', '2qrs.jpg', '122cm-6degrees3qrs.jpg', '174cm24degrees2qrs.jpg', '153cm-15degrees2qrs.jpg']
 
 class QrPoints:
 
@@ -103,6 +103,7 @@ class QrDetector:
 
     @staticmethod
     def find_qrs_and_show(rgb_image, save_path="", show=True):
+        aux_image = rgb_image.copy()
         binary_image = QrDetector.__binarize_image(rgb_image)
         decoded_qrs = decode(binary_image)
 
@@ -135,8 +136,10 @@ class QrDetector:
             cv2.destroyAllWindows()
 
         if save_path != "":
-            cv2.imwrite(save_path, rgb_image)
+            cv2.imwrite(save_path, aux_image)
+            cv2.imwrite(save_path.replace("original", "processed"), rgb_image)
             QrDetector.LOGGER.info("Image " + save_path + " correctly saved.")
+            
         
     @staticmethod
     def __binarize_image(image):
@@ -144,9 +147,15 @@ class QrDetector:
             gray_image = cv2.cvtColor(image, cv2.COLOR_RGB2GRAY)
         else:
             gray_image = image
-        blur = cv2.GaussianBlur(gray_image,(5,5),0)
-        _,th3 = cv2.threshold(blur,0,255,cv2.THRESH_BINARY+cv2.THRESH_OTSU)
-
+        alpha = 1.5
+        # beta = 5
+        beta = 50
+        gray_image = np.array(np.clip(alpha*gray_image + beta, 0, 255),np.uint8)
+        # blur = cv2.GaussianBlur(gray_image,(3,3),0)
+        #_,th3 = cv2.threshold(gray_image,100,255,cv2.THRESH_BINARY)
+        th3 = gray_image
+        # cv2.imshow('title', th3)
+        # cv2.waitKey(0)
         return th3
 
     @staticmethod

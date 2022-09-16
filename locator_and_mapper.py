@@ -18,12 +18,36 @@ class QrLocation:
 
 class LocatorAndMapper:
 
-    qrs_data = np.array([])
+    qrs_data = np.array([
+        QrLocation((0, 0), 10),
+        QrLocation((29, 0), 20),
+        QrLocation((56, 0), 7),
+        QrLocation((97.2, 10.5), 6),
+        QrLocation((97.2, 56.5), 8),
+        # QrLocation((97.2 - 17, 56.5 + 13.5 + 18.5), 9),
+        QrLocation((93.85, 98.65), 9),
+        # QrLocation((97.2 - 17, 56.5 + 13.5 + 18.5 + 22.5), 11),
+        QrLocation((93.85, 121.15), 11),
+        QrLocation((69.86, 156.61), 2),
+        QrLocation((56.59, 171.37), 13),
+        QrLocation((31.4, 188.19), 1),
+        QrLocation((7.77, 192.28), 14),
+        QrLocation((-26.39, 185.59), 12),
+        QrLocation((-44.05, 176.16), 15),
+        QrLocation((-59.67, 149.63), 16),
+        QrLocation((-74.88, 128.53), 3),
+        QrLocation((-79.51, 102.79), 5),
+        QrLocation((-79.51, 74.79), 4),
+        QrLocation((-79.51, 47.79), 17),
+        QrLocation((-55.97, 21.46), 18),
+        QrLocation((-36.04, 9.71), 19),
+        ])
     LOGGER = LoggerFactory.get_logger("LOGGER")
     nao_location = None
-
+    nao_direction = None
     def add_information(self, new_qrs_data):
         if len(new_qrs_data) < 2:
+            self.LOGGER.info("I could not found 2 QRs, just found {} :(".format(len(new_qrs_data)))
             return
 
         if len(self.qrs_data) == 0:
@@ -42,8 +66,10 @@ class LocatorAndMapper:
             
         # Procedimiento general
         known_qrs_indices = self.__get_known_qrs_indices(new_qrs_data)
+        self.LOGGER.info(len(known_qrs_indices))
         if len(known_qrs_indices) == 2:
             self.nao_location = self.__get_nao_location(known_qrs_indices, new_qrs_data)
+            # self.nao_direction = self.__get_nao_direction()
             self.__add_new_qrs(new_qrs_data, known_qrs_indices)
     
         return self.get_nao_location()
@@ -143,4 +169,7 @@ class LocatorAndMapper:
             new_qr = np.add(self.nao_location, new_qr_nao)
             new_qr = np.vectorize(lambda n: round(n, 3))(new_qr)
             self.__add_qr_to_map(new_qr, new_qr_data.id)
+    
+    # def __get_nao_direction(self, known_qrs_indices, new_qrs_data):
+
 
