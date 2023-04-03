@@ -1,3 +1,4 @@
+**/*.lock
 naoSDKPython/
 **/*.pyc
 __pycache__
