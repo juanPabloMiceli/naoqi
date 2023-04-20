@@ -2,7 +2,7 @@ import numpy as np
 import cv2
 from pyzbar.pyzbar import decode
 
-from logger_factory import LoggerFactory
+from workspace.utils.logger_factory import LoggerFactory
 
 images = ['baldoza360/intento3/original/out21.jpg']#, 'qrArmario120cm.jpg', 'qrArmario240cm.jpg', 'qrArmario280cm.jpg', 'qrArmarioCote.jpg', 'qrArmarioOffset.jpg', '3qrs.jpg', '2qrs.jpg', '122cm-6degrees3qrs.jpg', '174cm24degrees2qrs.jpg', '153cm-15degrees2qrs.jpg']
 

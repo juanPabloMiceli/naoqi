@@ -1,0 +1,12 @@
+Process:
+	START
+States:
+	3
+Transitions:
+	START = Q0,
+	Q0	= (close -> Q1
+		  |far -> Q2),
+	Q1	= (on -> Q1
+		  |far -> Q2),
+	Q2	= (close -> Q1
+		  |off -> Q2).

@@ -1,0 +1,15 @@
+Process:
+	DEFAULT
+States:
+	3
+Transitions:
+	DEFAULT = Q0,
+	Q0	= ({forward, narrow_deviation_left, narrow_deviation_right} -> Q0
+		  |wide_deviation_right -> Q1
+		  |wide_deviation_left -> Q2),
+	Q1	= (narrow_deviation_left -> Q0
+		  |{forward, narrow_deviation_right, turn_left, wide_deviation_right} -> Q1
+		  |wide_deviation_left -> Q2),
+	Q2	= (narrow_deviation_right -> Q0
+		  |wide_deviation_right -> Q1
+		  |{forward, narrow_deviation_left, turn_right, wide_deviation_left} -> Q2).

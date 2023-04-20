@@ -62,7 +62,7 @@ def main(session, ip, port):
         # time.sleep(1)
 
     # while index != -1:
-    #     gray_image = video_controller.get_current_gray_image()
+    #     gray_image = video_controller.get_current_gray_pov()
     #     qrs_data = QrDetector.get_qrs_information(gray_image)
     #     locator_and_mapper.add_information(qrs_data)
     #     sonar_adapter.write_data(qrs_data)

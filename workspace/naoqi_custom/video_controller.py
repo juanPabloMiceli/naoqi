@@ -10,10 +10,10 @@ from os.path import exists
 
 import numpy as np
 import cv2
-from logger_factory import LoggerFactory
-from nao_properties import NaoProperties
+from workspace.utils.logger_factory import LoggerFactory
+from workspace.naoqi_custom.nao_properties import NaoProperties
 
-from proxy_factory import ProxyFactory
+from workspace.naoqi_custom.proxy_factory import ProxyFactory
 
 
 class ImageContainer:
@@ -68,7 +68,7 @@ class VideoController:
         self.LOGGER.info("Generated new video id {}".format(self.video_id))
         
 
-    def get_current_gray_image(self):
+    def get_current_gray_pov(self):
         image_container = ImageContainer(self.proxy.getImageRemote(self.video_id))
         return cv2.cvtColor(image_container.get_cv2_image(), cv2.COLOR_BGR2GRAY)
 

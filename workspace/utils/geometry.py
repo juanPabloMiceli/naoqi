@@ -10,7 +10,7 @@ def distance(p1, p2):
 
 def normalize(v):
     norm = np.linalg.norm(v)
-    if norm == 0: 
+    if norm == 0:
        return v
     return v / norm
 

@@ -1,11 +1,11 @@
-from re import L
-from locator_and_mapper import LocatorAndMapper
-from video_controller import VideoController
-from sonar_adapter import SonarAdapter
-from map_display_adapter import MapDisplayAdapter
-from qr_detector import QrDetector
+from workspace.location.locator_and_mapper import LocatorAndMapper
+from workspace.naoqi_custom.video_controller import VideoController
+from workspace.sonar.sonar_adapter import SonarAdapter
+from workspace.sonar.map_display_adapter import MapDisplayAdapter
+from workspace.location.qr_detector import QrDetector
+from workspace.utils.geometry import distance, direction
 import numpy as np
-from geometry import distance, direction
+
 '''
 Estrategia de movimiento:
     Supongamos que estamos en (Xs, Ys) y queremos ir a (Xe, Ye).
@@ -31,7 +31,7 @@ class MovementController:
         self.__add_information()
 
     def __add_information(self):
-        gray_image = self.video_controller.get_current_gray_image()
+        gray_image = self.video_controller.get_current_gray_pov()
         qrs_data = QrDetector.get_qrs_information(gray_image)
         self.locator_and_mapper.add_information(qrs_data)
         self.__update_sonar_and_map_dislay(qrs_data)

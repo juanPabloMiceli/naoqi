@@ -1,0 +1,3 @@
+START = (close -> CLOSE | far -> FAR),
+FAR = (close -> CLOSE | off -> FAR),
+CLOSE = (far -> FAR | on -> CLOSE).

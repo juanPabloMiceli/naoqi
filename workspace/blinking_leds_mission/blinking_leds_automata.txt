@@ -1,0 +1,10 @@
+Process:
+	A
+States:
+	4
+Transitions:
+	A = Q0,
+	Q0	= (event -> Q1),
+	Q1	= (on -> Q2),
+	Q2	= (event -> Q3),
+	Q3	= (off -> Q0).

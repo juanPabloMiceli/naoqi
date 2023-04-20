@@ -9,7 +9,7 @@ class Automata(Thread):
 
         self._map = {}
         self._map_controllable_to_module(module_list)
-        self._queue_event = memory.event_queue
+        self._memory = memory
 
         self._index = 0
         self._not_exit = 1
@@ -38,12 +38,12 @@ class Automata(Thread):
                 break
 
             #Wait for the environment
-            event = self._queue_event.get()
+            event = self._memory.get_message()
             self._process_event(event)
 
     def _exit_routine(self):
-        while (self._queue_event.qsize() > 0):
-            self._queue_event.get()
+        while (self._memory.messages_left() > 0):
+            self._memory.get_message()
 
     '''
     Agarra la lista de controlables que expone cada modulo de la lista
@@ -67,8 +67,8 @@ class Automata(Thread):
         controllable_found = 1
         states = self._states
         while (controllable_found):
-            while(self._queue_event.qsize() > 0):
-                event = self._queue_event.get()
+            while(self._memory.messages_left() > 0):
+                event = self._memory.get_message()
                 self._process_event(event)
 
             #Search for controllables

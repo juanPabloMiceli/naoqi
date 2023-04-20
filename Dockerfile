@@ -16,8 +16,8 @@ RUN apt-get dist-upgrade -y
 
 # Instalo el naoqi sdk 
 COPY naoSDKPython /usr/local/lib/naoSDKPython
-RUN echo "export PYTHONPATH=/usr/local/lib/naoSDKPython/lib/python2.7/site-packages/" >> /root/.bashrc
-RUN echo "export LD_LIBRARY_PATH=/usr/local/lib/naoSDKPython/lib/" >> /root/.bashrc
+RUN echo "export LD_LIBRARY_PATH=app/naoSDKPython/lib/" >> /root/.bashrc
+RUN echo "export PYTHONPATH=/app/naoSDKPython/lib/python2.7/site-packages/" >> /root/.bashrc
 
 
 
@@ -30,6 +30,9 @@ RUN pip install pyzbar
 
 # Instalo pandas para usar el sonar adapter
 RUN pip install pandas==0.23.1
+
+# Misc installs
+RUN apt-get install vim -y
 
 WORKDIR /app
 

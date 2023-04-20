@@ -1,0 +1,17 @@
+[tool.poetry]
+name = "planning-for-trivial-game"
+version = "0.1.0"
+description = ""
+authors = ["Juan Pablo Miceli <micelijuanpablo@gmail.com>"]
+readme = "README.md"
+packages = [{include = "planning_for_trivial_game"}]
+
+[tool.poetry.dependencies]
+python = "^3.9"
+pygame = "^2.3.0"
+numpy = "^1.24.2"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

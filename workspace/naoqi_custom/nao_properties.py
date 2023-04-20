@@ -1,7 +1,7 @@
 import ConfigParser
 
 class NaoProperties:
-    properties_file = "connection.properties"
+    properties_file = "workspace/connection.properties"
     nao_section = "NaoSection"
     
     def __init__(self):

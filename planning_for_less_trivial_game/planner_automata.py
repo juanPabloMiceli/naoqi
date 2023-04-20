@@ -1,5 +1,8 @@
+import time
 from threading import Thread
+from multiprocessing import Queue,Value
 import numpy as np
+import _thread
 
 class Automata(Thread):
     def __init__(self,module_list,memory,verbose=True):
@@ -67,6 +70,7 @@ class Automata(Thread):
         controllable_found = 1
         states = self._states
         while (controllable_found):
+            time.sleep(0.05)
             while(self._queue_event.qsize() > 0):
                 event = self._queue_event.get()
                 self._process_event(event)
@@ -80,10 +84,12 @@ class Automata(Thread):
                     controllable_found = 1
                     list_contr.append(elem[0])
                     list_elem.append(elem)
+                    print(f"{list_contr=}, {list_elem=}")
 
-            if controllable_found:
+            for index in range(len(list_contr)):
+            #if controllable_found:
                 #index = self._choice_selector.select_controllable(list_contr,self._index)
-                index = 0
+                #index = 0
                 self._process_event(list_contr[index],controllable=True,element=list_elem[index])
         return
     '''

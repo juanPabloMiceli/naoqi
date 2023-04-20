@@ -1,0 +1,6 @@
+NOTHING    = (narrow_deviation_left -> NOTHING | narrow_deviation_right -> NOTHING | wide_deviation_left -> TURN_RIGHT | wide_deviation_right -> TURN_LEFT),
+TURN_LEFT  = (turn_left -> TURN_LEFT | narrow_deviation_left -> TURN_LEFT | narrow_deviation_right -> TURN_LEFT | wide_deviation_left -> TURN_RIGHT | wide_deviation_right -> TURN_LEFT),
+TURN_RIGHT = (turn_right -> TURN_RIGHT | narrow_deviation_left -> TURN_RIGHT | narrow_deviation_right -> TURN_RIGHT | wide_deviation_left -> TURN_RIGHT | wide_deviation_right -> TURN_LEFT).
+
+FAR = (forward -> FAR | close -> CLOSE | far -> FAR),
+CLOSE = (close -> CLOSE | far -> FAR).
