@@ -31,8 +31,16 @@ RUN pip install pyzbar
 # Instalo pandas para usar el sonar adapter
 RUN pip install pandas==0.23.1
 
-# Misc installs
+# Install Vim
 RUN apt-get install vim -y
+
+
+#Install FZF
+WORKDIR /bin
+RUN apt-get install wget
+RUN wget https://github.com/junegunn/fzf/releases/download/0.39.0/fzf-0.39.0-linux_amd64.tar.gz fzf.tar.gz | true #For some reason this failes with error code 4, but in reality it downloads the binary
+RUN tar -xf fzf-0.39.0-linux_amd64.tar.gz
+RUN echo "source /app/fzf-key-bindings.bash" >> /root/.bashrc
 
 WORKDIR /app
 
