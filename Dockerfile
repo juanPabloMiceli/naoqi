@@ -24,12 +24,9 @@ RUN echo "export PYTHONPATH=/app/naoSDKPython/lib/python2.7/site-packages/" >> /
 # Instalo binario zbar
 RUN apt-get install libzbar0
 
-#Instalo pip y el python wrapper de zbar
-RUN apt-get install python-pip -y
-RUN pip install pyzbar
-
-# Instalo pandas para usar el sonar adapter
-RUN pip install pandas==0.23.1
+#Instalo pip y las dependencias
+RUN apt-get install python-pip -y 
+RUN pip install -r requirements.txt 
 
 # Install Vim
 RUN apt-get install vim -y

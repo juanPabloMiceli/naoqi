@@ -2,3 +2,5 @@
 naoSDKPython/
 **/*.pyc
 __pycache__
+naoenv/
+.vscode/
