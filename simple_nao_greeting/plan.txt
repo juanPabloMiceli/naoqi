@@ -1,0 +1,25 @@
+# El evento start seria el launch inicial para buscar un saludo, o estar atento al mismo.
+START = (start -> AWARE)
+
+# En el estado AWARE, se espera a reconocer un saludo (evento greet). En caso de reconocerlo, hay que busacr de donde provino.
+# En caso de no reconocer nada (por timeout por ejemplo) se mantiene en estado aware
+# Ademas se permite salir del estado de AWARE si sucede un evento END
+AWARE = (greet -> LOOK | no_greet -> AWARE | end -> STOP)
+
+# - Reconocer un saludo => ALBasicAwareness + ALWavingDetection
+# HumanEventTracked[id1] (ABW) -> PersonWavingEvent (AWD) -> greet
+
+# Si se encuentra de donde porvino el saludo, sucede un evento found y se realiza un saludo.
+# Caso contrario se vuelve a estar aware a otro saludo.
+LOOK = (found -> GREET | not_found -> AWARE)
+
+# - Buscar de donde proviene un saludo => ALPeoplePerception + ALFaceDetection
+# SetTrackingMode(BodyRotation) (ABW) -> EngagePerson[id1] (ABW) -> found
+
+# Una vez saludado se finaliza y se vuelve a estar aware a otro saludo
+GREET = (finish -> AWARE)
+
+# - Saludar => ALAnimationPlayer
+# (run(hello) | run(hey) | run(hi)) -> finish
+
+NAO_GREETING_AWARE = (START || AWARE || LOOK || GREET)
