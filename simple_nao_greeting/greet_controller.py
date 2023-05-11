@@ -1,32 +1,36 @@
 import time
+import sys
 
 from logger_factory import LoggerFactory
 from nao_properties import NaoProperties
 from proxy_factory import ProxyFactory
 
-from naoqi import ALModule
+from naoqi import ALModule, ALBroker
+
+import qi
 
 LOOK_TIMEOUT = 20 # seconds
 
 class GreetController(ALModule):
-    def __init__(self, ip, port):
+    def __init__(self, ip, port, session):
         self.name = "greetModule"
         ALModule.__init__(self, self.name)
         self.LOGGER = LoggerFactory.get_logger("GreetController")
-        self.awareness = ProxyFactory.get_proxy("ALBasicAwareness", ip, port)
-        self.people_perception = ProxyFactory.get_proxy("ALPeoplePerception", ip, port)
-        self.face_detection = ProxyFactory.get_proxy("ALPeoplePerception", ip, port)
-        self.animation_player = ProxyFactory.get_proxy("ALPeoplePerception", ip, port)
-        self.wave_detection = ProxyFactory.get_proxy("ALPeoplePerception", ip, port)
-        self.text_to_speech = ProxyFactory.get_proxy("ALPeoplePerception", ip, port)
-        self.memory = ProxyFactory.get_proxy("ALPeoplePerception", ip, port)
+        self.awareness = session.service("ALBasicAwareness")
+        self.people_perception = session.service("ALPeoplePerception")
+        self.face_detection = session.service("ALFaceDetection")
+        # self.animation_player = session.service("ALAnimationPlayer")
+        # self.wave_detection = session.service("ALWavingDetection")
+        self.text_to_speech = session.service("ALTextToSpeech")
+        self.memory = session.service("ALMemory")
 
         self.waved_person_id = None
 
     def start_awareness(self):
         # start the awareness of the NAO
+        print(self.awareness.__dict__)
         self.LOGGER.info("Starting greeting awareness")
-        self.awareness.setEnabled(True)
+        self.awareness.startAwareness()
         
         # enable people detection only
         self.LOGGER.info("Allowing people detection")
@@ -43,11 +47,12 @@ class GreetController(ALModule):
         # subscribe to wave detection
         self.LOGGER.info("Subscribing to wave detection events")
         self.memory.subscribeToEvent(
-            "PersonWaving",
+            "PeoplePerception/JustArrived",
             self.getName(),
             "greet_detected"
         )
-
+        while 1:
+            continue
 
     def greet_detected(
             self,
@@ -69,17 +74,17 @@ class GreetController(ALModule):
         self.awareness.engagePerson(self.waved_person_id)
 
         # pause awareness
-        self.awareness.pauseAwareness()
+        self.awareness.stopAwareness()
 
         # greet, gets an animation future to be able to 
-        animation_future = self.animation_player.runTag("hello")
+        # animation_future = self.animation_player.runTag("hello")
         self.text_to_speech.say("Hi")
 
         # wait for the future to end
-        animation_future.wait(10000)
+        # animation_future.wait(10000)
 
         #resume awareness
-        self.awareness.resumeAwareness()
+        self.awareness.startAwareness()
         
 
     def on(self):
@@ -88,6 +93,17 @@ class GreetController(ALModule):
 
 if __name__ == "__main__":
     IP, PORT = NaoProperties().get_connection_properties()
-    leds_controller = GreetController(IP, PORT)
 
-    GreetController.start_awareness()
+    broker = ALBroker("broker", "0.0.0.0", 0, IP, PORT)
+
+    session = qi.Session()
+    try:
+        session.connect("tcp://" + IP + ":" + str(PORT))
+    except RuntimeError:
+        print("error :(")
+        sys.exit(1)
+
+    greetModule = GreetController(IP, PORT, session)
+
+    greetModule.start_awareness()
+    
