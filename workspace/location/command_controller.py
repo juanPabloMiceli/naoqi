@@ -174,5 +174,5 @@ if __name__ == "__main__":
 
     commandController = CommandController(IP, PORT, session)
 
-    #commandController.start_awareness()
-    commandController.stop_awareness()
+    commandController.start_awareness()
+    # commandController.stop_awareness()
