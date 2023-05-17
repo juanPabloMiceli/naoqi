@@ -1,0 +1,12 @@
+Process:
+	INIT
+States:
+	5
+Transitions:
+	INIT = Q0,
+	Q0	= (close -> Q1
+		  |far -> Q3),
+	Q1	= (on -> Q2),
+	Q2	= (far -> Q3),
+	Q3	= (off -> Q4),
+	Q4	= (close -> Q1).

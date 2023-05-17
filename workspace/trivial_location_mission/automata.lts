@@ -1,0 +1,5 @@
+INIT = (close -> B | far -> D),
+A = (close -> B),
+B = (on -> C),
+C = (far -> D),
+D = (off -> A).

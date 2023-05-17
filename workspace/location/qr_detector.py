@@ -136,8 +136,9 @@ class QrDetector:
             cv2.destroyAllWindows()
 
         if save_path != "":
-            cv2.imwrite(save_path, aux_image)
-            cv2.imwrite(save_path.replace("original", "processed"), rgb_image)
+            cv2.imwrite("out_photo.jpg", rgb_image)
+            # cv2.imwrite(save_path, aux_image)
+            # cv2.imwrite(save_path.replace("original", "processed"), rgb_image)
             QrDetector.LOGGER.info("Image " + save_path + " correctly saved.")
             
         
@@ -187,5 +188,5 @@ class QrDetector:
 
 if __name__ == "__main__":
     for image in images:
-        rgb_image = cv2.imread("images/"+image)
-        QrDetector.find_qrs_and_show(rgb_image)
+        rgb_image = cv2.imread("my_photo.jpg")
+        QrDetector.find_qrs_and_show(rgb_image, "aux", False)
