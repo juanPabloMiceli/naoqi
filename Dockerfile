@@ -12,6 +12,8 @@ RUN apt-get install software-properties-common -y
 RUN add-apt-repository ppa:ubuntu-toolchain-r/test
 RUN apt-get update
 RUN apt-get dist-upgrade -y
+RUN apt-get install -y iputils-ping
+RUN apt-get install -y curl
 
 # Creo un usuario para que los archivos creados en el container de forma interactiva no sean root.
 RUN useradd -u 1000 -m -s /bin/bash user && echo 'user:password' | chpasswd
