@@ -22,6 +22,8 @@ class SharedMem():
         self._naox = Value('d',0.0) #X axis
         self._naoy = Value('d',0.0) #Y axis
 
+        self._nao_direction = Value('d', 0.0)
+
         #goal Position
         self._goalx = Value('d',0.0) #X axis
         self._goaly = Value('d',0.0) #Y axis
@@ -35,6 +37,12 @@ class SharedMem():
 
     def get_nao_position(self):
         return np.array([self._naox.value, self._naoy.value])
+
+    def set_nao_direction(self, new_direction):
+        self._nao_direction.value = new_direction
+
+    def get_nao_position(self):
+        return self._nao_direction.value
 
     def set_goal_position(self, new_position):
         self._goalx.value = new_position[0]

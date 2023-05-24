@@ -18,7 +18,7 @@ RUN useradd -u 1000 -m -s /bin/bash user && echo 'user:password' | chpasswd
 
 # Instalo el naoqi sdk 
 COPY naoSDKPython /usr/local/lib/naoSDKPython
-RUN echo "export LD_LIBRARY_PATH=home/user/nao/naoSDKPython/lib/" >> /home/user/.bashrc
+RUN echo "export LD_LIBRARY_PATH=/home/user/nao/naoSDKPython/lib/" >> /home/user/.bashrc
 RUN echo "export PYTHONPATH=/home/user/nao/naoSDKPython/lib/python2.7/site-packages/" >> /home/user/.bashrc
 
 # Instalo binario zbar
