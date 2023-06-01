@@ -41,6 +41,7 @@ RUN apt-get install wget
 RUN wget https://github.com/junegunn/fzf/releases/download/0.39.0/fzf-0.39.0-linux_amd64.tar.gz fzf.tar.gz | true # For some reason this failes with error code 4, but in reality it downloads the binary
 RUN tar -xf fzf-0.39.0-linux_amd64.tar.gz
 RUN echo "source /home/user/nao/fzf-key-bindings.bash" >> /home/user/.bashrc
+RUN apt-get install openssh-client -y
 
 WORKDIR /home/user/nao
 
