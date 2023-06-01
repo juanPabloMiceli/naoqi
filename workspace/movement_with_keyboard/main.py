@@ -13,9 +13,9 @@ class KeyboardController(Thread):
         self.shared_file = "workspace/movement_with_keyboard/shared.txt"
         self.last_accesed = time.time()
 
-    def run():
+    def run(self):
         while True:
-            if self.last_accesed < self._last_modified(shared_file):
+            if self.last_accesed < self._last_modified(self.shared_file):
                 self.last_accesed = time.time()
             with open(self.shared_file, 'r') as f:
                 f.seek(-2, 2)
@@ -44,7 +44,7 @@ class KeyboardController(Thread):
                     print("unknown character '{}'".format(character))
 
 
-    def _last_modified(ff):
+    def _last_modified(self, ff):
         modified_time = 0
         try:
             modified_time = os.path.getmtime(ff)

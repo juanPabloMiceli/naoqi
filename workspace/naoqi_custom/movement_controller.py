@@ -84,6 +84,11 @@ class MovementController(Thread):
     def is_awake(self):
         return self.motion_proxy.robotIsWakeUp()
 
+    def awake(self):
+        self.motion_proxy.wakeUp()
+        while not self.motion_proxy.robotIsWakeUp():
+            continue
+
 
 
 if __name__ == "__main__":
