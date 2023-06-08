@@ -3,3 +3,5 @@ naoSDKPython/
 **/*.pyc
 __pycache__
 secret_cfg.py
+.env
+*.wav

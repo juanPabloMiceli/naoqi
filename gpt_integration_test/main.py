@@ -58,20 +58,19 @@ def execute_message(text: str) -> str:
 
 @app.post("/transcribe_and_generate/")
 async def transcribe_and_generate(audio: AudioPath):
-    r = sr.Recognizer()
-    audio_path = "/audio_files/" + audio.path
+    # gather the audio path
+    audio_path = "/app/audio_files/" + audio.path
     try:
-        with sr.AudioFile(audio_path) as source:
-            audio_data = r.record(source)
-            text = r.recognize_google(audio_data)
-            text = "Chookie parate"
-            print("Transcribed Text: ", text)
+        audio_file = open(audio_path, "rb")
+        transcript = openai.Audio.translate("whisper-1", audio_file)["text"]
+        print(f"Transcript: {transcript}")
     except Exception as e:
         print(e)
         raise HTTPException(status_code=400, detail="Error transcribing audio")
 
     try:
-        return {"generated_text": execute_message(text)}
+        # execute the transcript on gpt
+        return {"generated_text": execute_message(transcript)}
     except Exception as e:
         print(e)
         raise HTTPException(
@@ -89,6 +88,6 @@ async def generate(sent_text: SentText):
         )
     
 
-@app.get("/test_api/")
+@app.get("/test_api")
 async def test_api():
     return {"generated_text": "Hi, my name is Chookie"}

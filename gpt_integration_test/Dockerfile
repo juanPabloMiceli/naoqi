@@ -7,6 +7,9 @@ WORKDIR /app
 # Add current directory code to /app in container
 ADD . /app
 
+# install mic input dependencies
+RUN apt-get update && apt-get install -y portaudio19-dev
+
 # Install Poetry
 RUN pip install poetry
 
