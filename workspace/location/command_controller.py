@@ -84,7 +84,7 @@ class CommandController(ALModule):
         self.people_perception = session.service("ALPeoplePerception")
         # self.modules.append((self.people_perception, ""))
 
-        self.face_detection = session.service("ALFaceDetection")
+        # self.face_detection = session.service("ALFaceDetection")
         # self.modules.append((self.face_detection, ""))
 
         # self.animation_player = session.service("ALAnimationPlayer")
@@ -92,7 +92,7 @@ class CommandController(ALModule):
         self.text_to_speech = session.service("ALTextToSpeech")
         # self.modules.append((self.text_to_speech, ""))
 
-        self.speech_recognition = session.service("ALSpeechRecognition")
+        # self.speech_recognition = session.service("ALSpeechRecognition")
         # self.modules.append((self.speech_recognition, ""))
 
         # self.sound_detection = session.service("ALSoundDetection")
@@ -101,7 +101,7 @@ class CommandController(ALModule):
         self.posture_manager = session.service("ALRobotPosture")
         self.modules.append((self.posture_manager, "stopMove"))
 
-        self.LOGGER.info(self.posture_manager.getPostureList())
+        # self.LOGGER.info(self.posture_manager.getPostureList())
         self.animated_speech = session.service("ALAnimatedSpeech")
         # self.modules.append((self.animated_speech, ""))
 
@@ -212,16 +212,16 @@ class CommandController(ALModule):
         # start the awareness of the NAO
         self.LOGGER.info("Stopping awareness")
         name = self.getName()
-        try:
-            self.speech_recognition.unsubscribe(name)
-        except RuntimeError:
-            pass
-        self.awareness.stopAwareness()
-        self.posture_manager.stopMove()
-        try:
-            self.memory.unregisterModuleReference(name)
-        except RuntimeError:
-            pass
+        # try:
+        #     self.speech_recognition.unsubscribe(name)
+        # except RuntimeError:
+        #     pass
+        # self.awareness.stopAwareness()
+        # self.posture_manager.stopMove()
+        # try:
+        #     self.memory.unregisterModuleReference(name)
+        # except RuntimeError:
+        #     pass
         self.motion.rest()
 
     def looked_at(
