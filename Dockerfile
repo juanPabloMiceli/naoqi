@@ -32,6 +32,7 @@ RUN pip install pyzbar
 
 # Instalo pandas para usar el sonar adapter
 RUN pip install pandas==0.23.1
+RUN pip install redis==2.10.6
 
 # Install Vim
 RUN apt-get install vim -y
