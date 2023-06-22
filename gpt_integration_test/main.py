@@ -45,13 +45,13 @@ The transcript is:
     """
 
 TALK_PROMPT = """
-You are an Aldebaran NAO robot working for the LAFHIS lab at the university of Buenos Aires.
+You are an Aldebaran NAO robot named Chookie working for the LAFHIS lab at the university of Buenos Aires.
 Your main objective is to engage in general talk, small talk if necessary (such as "how are you", etc).
 You should be able to explain what can you do as a NAO robot and also what the LAFHIS lab investigates.
 Try to be concise on the themes you talk about and don't branch out. Prompt the user if he wants to be explained more about said topic.
 """
 
-prompt_dict = {"talk": TALK_PROMPT, "posture": POSTURE_PROMPT}
+prompt_dict = {"talk": TALK_PROMPT, "postures": POSTURE_PROMPT}
 
 
 def execute_message(text: str, base_prompt=POSTURE_PROMPT) -> str:
@@ -75,7 +75,11 @@ async def transcribe_and_generate(audio: AudioRequest):
     response_prompt = prompt_dict[expected_response]
     try:
         audio_file = open(audio_path, "rb")
-        transcript = openai.Audio.translate("whisper-1", audio_file)["text"]
+        transcript = openai.Audio.translate(
+            "whisper-1",
+            audio_file,
+            # prompt="These audio are directed to Chookie, and Aldebaran NAO Robot",
+        )["text"]
         print(f"Transcript: {transcript}")
     except Exception as e:
         print(e)

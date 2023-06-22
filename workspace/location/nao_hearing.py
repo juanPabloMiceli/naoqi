@@ -5,6 +5,8 @@ import json
 import urllib
 from redis import Redis
 from time import sleep
+import inspect
+import string
 
 from workspace.utils.logger_factory import LoggerFactory
 from workspace.naoqi_custom.nao_properties import NaoProperties
@@ -13,6 +15,20 @@ from workspace.naoqi_custom.proxy_factory import ProxyFactory
 from naoqi import ALModule, ALBroker
 
 import qi
+
+
+def remove_non_ascii_letters(input_string, leave_dots_and_commas=False):
+    # Create a string of all ASCII letters
+    ascii_letters = string.ascii_letters
+
+    if leave_dots_and_commas:
+        ascii_letters += [".", "'", ",", ":", "\n"]
+
+    # Filter out characters that are not ASCII letters
+    filtered_string = "".join(char for char in input_string if char in ascii_letters)
+
+    return filtered_string
+
 
 LOOK_TIMEOUT = 20  # seconds
 
@@ -70,7 +86,7 @@ class CommandController(ALModule):
         self.command_type = command_type
         self.redis.set("command_type", command_type)
 
-    def start_awareness(self, type):
+    def start_awareness(self):
         self.motion.wakeUp()
 
         # start the awareness of the NAO
@@ -97,28 +113,35 @@ class CommandController(ALModule):
 
         # set a name for the audo files
         self.redis.set("speech_tag", "nao_audio")
-        self.allow_gaze_recgonition(True)
+        # self.allow_gaze_recgonition(True)
+        # self.allow_speech_recgonition(True)
 
         while True:
-            self.text_to_speech.say(
-                "Please tell me what posture you would like me to do."
-            )
+            if self.command_type == "postures":
+                self.text_to_speech.say(
+                    "Please tell me what posture you would like me to do."
+                )
+            self.redis.set("avoid_hearing", 0)
 
-            while self.redis.get("gpt-response") is None:
+            while self.redis.get("gpt_response") is None:
                 sleep(0.2)
 
-            response = self.redis.get("gpt-response").decode("utf-8")
-            if self.command_type == "posture":
+            self.LOGGER.info("Has GPT response")
+
+            self.redis.set("avoid_hearing", 1)
+
+            response = self.redis.get("gpt_response").decode("utf-8")
+            if self.command_type == "postures":
                 self.manage_posture_command(response)
             elif self.command_type == "talk":
                 self.manage_talk_response(response)
             else:
                 self.LOGGER.info("Unknown method to manage")
-            
-            self.redis.delete("gpt-response")
-            
+
+            self.redis.delete("gpt_response")
+
     def manage_posture_command(self, response):
-        response = response.replace('"', "")
+        response = remove_non_ascii_letters(response)
 
         self.LOGGER.info("Received command: {}".format(response))
 
@@ -130,6 +153,13 @@ class CommandController(ALModule):
             self.text_to_speech.say(
                 "Sorry, I didn't recognize the posture you requested."
             )
+
+    def manage_talk_response(self, response):
+        response = remove_non_ascii_letters(response, leave_dots_and_commas=True)
+
+        self.LOGGER.info("Received response: {}".format(response))
+
+        self.text_to_speech.say(response.encode("utf-8", errors="ignore"))
 
     def stop_awareness(self):
         # start the awareness of the NAO
@@ -153,8 +183,8 @@ class CommandController(ALModule):
         self.LOGGER.info("Speech status changed")
         self.logger.info("new status is {}".format(status))
         if status == "SpeechDetected":
-            self.redis.set * ("speech_detected", 1)
-        elif status == "Idle":
+            self.redis.set("speech_detected", 1)
+        else:  # if status == "Idle":
             self.redis.set("speech_detected", 0)
 
     def looked_at(self, event_name, id_list, sub_identifier):
@@ -190,7 +220,7 @@ class CommandController(ALModule):
             if allow:
                 self.memory.subscribeToEvent(
                     "GazeAnalysis/PeopleLookingAtRobot",
-                    self.getName(),True
+                    self.getName(),
                     "looked_at",
                 )
             else:
@@ -214,8 +244,8 @@ if __name__ == "__main__":
     except RuntimeError:
         print("error :(")
         sys.exit(1)
-        
-    command_type = "postures" # "Talk"
+
+    command_type = "talk"  # "postures"
 
     commandController = CommandController(IP, PORT, session, command_type)
 
