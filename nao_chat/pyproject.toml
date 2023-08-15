@@ -1,0 +1,27 @@
+[tool.poetry]
+name = "nao_chat"
+version = "0.1.0"
+description = "A Chatbot application using OpenAI."
+authors = ["Your Name <your-email@example.com>"]
+license = "MIT"
+
+[tool.poetry.dependencies]
+python = "^3.9"
+openai = "^0.27.7"
+gradio = "^3.31.0"
+langchain = "^0.0.175"
+duckdb = "^0.8.0"
+tiktoken = "^0.4.0"
+redis = "^4.5.5"
+faker = "^18.9.0"
+sqlalchemy = "^2.0.15"
+
+[tool.poetry.dev-dependencies]
+pytest = "^6.2.5"
+black = "^21.11b1"
+mypy = "^0.910"
+flake8 = "^3.9.2"
+
+[build-system]
+requires = ["poetry>=0.12"]
+build-backend = "poetry.masonry.api"
