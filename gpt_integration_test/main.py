@@ -4,6 +4,8 @@ from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 import speech_recognition as sr
 import openai
+from redis import Redis
+import json
 
 import secret_cfg as scfg
 
@@ -21,6 +23,8 @@ class SentText(BaseModel):
 app = FastAPI()
 
 openai.api_key = scfg.API_KEY
+
+redis_conn = Redis(host="nao-redis", port=6379, db=0)
 
 POSTURE_PROMPT = """
 You are an intent detector for a NAO robot named Chooki.
@@ -55,6 +59,16 @@ prompt_dict = {"talk": TALK_PROMPT, "postures": POSTURE_PROMPT}
 
 
 def execute_message(text: str, base_prompt=POSTURE_PROMPT) -> str:
+    conversation_str = redis_conn.get("conversation")
+    if conversation_str is None:
+        conversation = [
+            {"role": "system", "content": base_prompt},
+            {"role": "user", "content": text},
+        ]
+    else:
+        conversation = json.loads(conversation_str)
+        conversation.append({"role": "user", "content": text})
+
     response = openai.ChatCompletion.create(
         model="gpt-3.5-turbo",
         messages=[
@@ -63,6 +77,8 @@ def execute_message(text: str, base_prompt=POSTURE_PROMPT) -> str:
         ],
     )
     generated_text = response.choices[0].message.content
+    conversation.append({"role": "assistant", "content": generated_text})
+    redis_conn.set("conversation", str(conversation))
     print(generated_text)
     return generated_text
 

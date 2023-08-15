@@ -2,7 +2,9 @@ from python_recording import Recorder, post_to_api
 from redis import Redis
 import sounddevice as sd
 from time import sleep
-from speech_detection import audio_callback
+from speech_detection import audio_callback, has_speech
+
+AUDIO_PATH = "/app/audio_files"
 
 
 class AudioInputManager:
@@ -17,17 +19,22 @@ class AudioInputManager:
 
         def stream_callback(indata, frames, time, status):
             avoid_hearing = self.redis.get("avoid_hearing") == b"1"
+            speech_detected_value = None
             if not avoid_hearing:
-                audio_callback(indata, frames, time, status)
+                speech_detected_value = audio_callback(indata, frames, time, status)
             self.recorder.callback(indata, frames, time, status)
 
-        self.recorder.start_recording()  # Start audio recording
+            if speech_detected_value is not None:
+                self.redis.set("speech_detected", int(speech_detected_value))
+
         with sd.InputStream(
             device=self.recorder.device,  # self.recorder.device,
             callback=stream_callback,
             channels=self.recorder.channels,
             samplerate=self.recorder.samplerate,
         ):
+            self.recorder.start_recording()  # Start audio recording
+
             while True:
                 try:
                     sleep(interval)  # Wait for the specified interval
@@ -44,22 +51,27 @@ class AudioInputManager:
                             sleep(0.5)
                         print("Speech undetected")
                         speech_tag = self.redis.get("speech_tag").decode("utf-8")
+                        speech_audio_filepath = f"{speech_tag}.wav"
+
                         self.recorder.stop_recording(
-                            f"{speech_tag}.wav"
+                            speech_audio_filepath
                         )  # Stop audio recording
                         print("Recording Stopped")
 
+                        # if has_speech(f"{AUDIO_PATH}/{speech_audio_filepath}"):
+                        #    print("Audio file has actual speech")
                         # send audio recording a retrieve response
                         response = post_to_api(
-                            f"{speech_tag}.wav",
+                            speech_audio_filepath,
                             self.redis.get("command_type").decode("utf-8"),
                         )
                         print(response)
-                        self.redis.set(f"gpt_response", response)
+                        if response is not None:
+                            self.redis.set(f"gpt_response", response)
 
-                        self.redis.set("speech_available", 1)
-                        self.recorder.start_recording()
-                except:
+                    self.recorder.start_recording()
+                except Exception as e:
+                    print(e)
                     self.recorder.stop_recording("noise.wav")
 
 

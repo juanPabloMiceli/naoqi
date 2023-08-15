@@ -22,7 +22,8 @@ def remove_non_ascii_letters(input_string, leave_dots_and_commas=False):
     ascii_letters = string.ascii_letters
 
     if leave_dots_and_commas:
-        ascii_letters += [".", "'", ",", ":", "\n"]
+        for char in [".", "'", ",", ":", "\n", " "]:
+            ascii_letters = ascii_letters + char
 
     # Filter out characters that are not ASCII letters
     filtered_string = "".join(char for char in input_string if char in ascii_letters)
@@ -113,6 +114,7 @@ class CommandController(ALModule):
 
         # set a name for the audo files
         self.redis.set("speech_tag", "nao_audio")
+        self.redis.delete("conversation")
         # self.allow_gaze_recgonition(True)
         # self.allow_speech_recgonition(True)
 
@@ -245,7 +247,7 @@ if __name__ == "__main__":
         print("error :(")
         sys.exit(1)
 
-    command_type = "talk"  # "postures"
+    command_type = "talk"  # "talk/postures"
 
     commandController = CommandController(IP, PORT, session, command_type)
 
