@@ -80,11 +80,12 @@ class Recorder:
 
     def stop_recording(self, filename):
         self.is_recording = False
-        write(
-            f"{self.file_path}/{filename}",
-            self.samplerate,
-            np.concatenate(self.recording, axis=0),
-        )
+        if len(self.recording) > 0:
+            write(
+                f"{self.file_path}/{filename}",
+                self.samplerate,
+                np.concatenate(self.recording, axis=0),
+            )
         self.recording = []
 
 

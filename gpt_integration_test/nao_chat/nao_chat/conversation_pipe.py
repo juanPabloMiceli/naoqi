@@ -1,7 +1,14 @@
 from typing import Union
+from enum import Enum
 
 import redis
-from nao_chat.enums import ChatRoles
+
+
+class ChatRoles(Enum):
+    system = "system"
+    user = "user"
+    assistant = "assistant"
+    function = "function"
 
 
 class ConversationPipe:
@@ -11,7 +18,8 @@ class ConversationPipe:
 
     def __init__(self) -> None:
         # start redis conn
-        self.client = redis.Redis(host="nao_chat-redis", port=6379, db=0)
+        self.client = redis.Redis(host="nao-redis", port=6379, db=0)
+        self.clear()
 
     def clear(self) -> None:
         # removes redis convo

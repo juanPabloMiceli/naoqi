@@ -23,3 +23,8 @@ class OpenAIModel(Enum):
 
 class ArtPiece(Enum):
     mona_lisa = "Mona Lisa"
+    the_starry_night = "The Starry Night"
+    girl_with_a_pearl_earring = "Girl with a Pearl Earring"
+    the_kiss = "The Kiss"
+    the_birth_of_venus = "The Birth of Venus"
+    guernica = "Guernica"

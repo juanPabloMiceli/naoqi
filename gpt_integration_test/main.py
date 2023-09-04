@@ -55,7 +55,13 @@ You should be able to explain what can you do as a NAO robot and also what the L
 Try to be concise on the themes you talk about and don't branch out. Prompt the user if he wants to be explained more about said topic.
 """
 
-prompt_dict = {"talk": TALK_PROMPT, "postures": POSTURE_PROMPT}
+CHAT_MODE_PROMPT_SKIP = "transcribe_only"
+
+prompt_dict = {
+    "talk": TALK_PROMPT,
+    "postures": POSTURE_PROMPT,
+    "chat": CHAT_MODE_PROMPT_SKIP,
+}
 
 
 def execute_message(text: str, base_prompt=POSTURE_PROMPT) -> str:
@@ -97,6 +103,8 @@ async def transcribe_and_generate(audio: AudioRequest):
             # prompt="These audio are directed to Chookie, and Aldebaran NAO Robot",
         )["text"]
         print(f"Transcript: {transcript}")
+        if response_prompt == "transcribe_only":
+            return {"generated_text": transcript}
     except Exception as e:
         print(e)
         raise HTTPException(status_code=400, detail="Error transcribing audio")
@@ -109,6 +117,26 @@ async def transcribe_and_generate(audio: AudioRequest):
         raise HTTPException(
             status_code=500, detail="Error generating response from GPT-3"
         )
+
+
+@app.post("/transcribe/")
+async def transcribe_and_generate(audio: AudioRequest):
+    # gather the audio path
+    audio_path = "/app/audio_files/" + audio.path
+    expected_response = audio.expected_response
+    response_prompt = prompt_dict[expected_response]
+    try:
+        audio_file = open(audio_path, "rb")
+        transcript = openai.Audio.translate(
+            "whisper-1",
+            audio_file,
+            # prompt="These audio are directed to Chookie, and Aldebaran NAO Robot",
+        )["text"]
+        print(f"Transcript: {transcript}")
+        return transcript
+    except Exception as e:
+        print(e)
+        raise HTTPException(status_code=400, detail="Error transcribing audio")
 
 
 @app.post("/generate")

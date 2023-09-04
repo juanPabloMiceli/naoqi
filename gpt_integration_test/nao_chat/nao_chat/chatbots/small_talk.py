@@ -1,7 +1,7 @@
 import logging
 from nao_chat.enums import AvailableChatbots, ChatRoles
 from nao_chat.chatbot import ChatBot
-from nao_chat.cfg import logger, PROMPT_STORE_PATH
+from nao_chat.cfg import PROMPT_STORE_PATH
 from nao_chat.helpers import read_text_file
 
 
@@ -29,6 +29,6 @@ SMALL_TALK_BOT = ChatBot("SMALL_TALK", base_prompt=prompt)
     parsing_functions={"bot": lambda x: x},
 )
 def redirect(chatbot: ChatBot, bot: str):
-    # logger.info(f"\n--- {chatbot.name}: redirect ---")
+    print(f"--- {chatbot.name}: redirect ---")
     # notify the manager for a redirection
     chatbot.manager.redirect(bot)

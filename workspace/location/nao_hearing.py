@@ -137,6 +137,8 @@ class CommandController(ALModule):
                 self.manage_posture_command(response)
             elif self.command_type == "talk":
                 self.manage_talk_response(response)
+            elif self.command_type == "chat":
+                self.manage_talk_response(response)
             else:
                 self.LOGGER.info("Unknown method to manage")
 
@@ -247,7 +249,7 @@ if __name__ == "__main__":
         print("error :(")
         sys.exit(1)
 
-    command_type = "talk"  # "talk/postures"
+    command_type = "chat"  # "talk/postures"
 
     commandController = CommandController(IP, PORT, session, command_type)
 

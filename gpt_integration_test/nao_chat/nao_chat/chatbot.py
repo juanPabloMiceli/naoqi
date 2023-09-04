@@ -67,6 +67,8 @@ class ChatBot:
         openai_function_call_dict : Dict[str, str]
             An open ai fucntion json object
         """
+        print(f"--- {self.name}: function call ---")
+
         # get the handler
         function_name = openai_function_call_dict["name"]
         handler_to_call = self.handlers[function_name]
@@ -93,6 +95,7 @@ class ChatBot:
     def add_message(
         self, message: str, role: ChatRoles = ChatRoles.user, function: str = None
     ):
+        print(f"--- {self.name}: add_message ---")
         """
         Add a message to the chatbot conversation.
 
@@ -113,10 +116,11 @@ class ChatBot:
         self.conversation.append(message_dict)
 
     def run_conversation(self, retries: int = 2):
-        if retries < 2:
-            sleep(2)
-        elif retries <= 0:
-            raise Exception("NumberRetriesExceededError")
+        print(f"--- {self.name}: run conversation")
+        # if retries < 2:
+        #     sleep(2)
+        # elif retries <= 0:
+        #     raise Exception("NumberRetriesExceededError")
 
         # send the current conversation to be evaluated by the LLM model
         try:
@@ -159,13 +163,15 @@ class ChatBot:
         # if response has a function call, then execute it
         # the handler will execute the expected beheaviour
         if response_message.get("function_call"):
+            print("executed function")
             self.handle_function_call(response_message["function_call"])
 
         # else, send the message to the manager and wait for an answer
         else:
+            print("direct answer")
             # extract and log the response
             response_text = response.choices[0].message.content
-            logging.info(f"{self.name}: {response_text}")
+            print(f"{self.name}: {response_text}")
 
             # add it to chatbot the conversation
             self.add_message(response_text, role=ChatRoles.assistant)
@@ -183,6 +189,7 @@ class ChatBotManager:
     chatbots: Dict[str, ChatBot] = {}
 
     def __init__(self) -> None:
+        print("--- CBM: init ---")
         # create a copy of all chatbots for the new manager
         self.chatbots = deepcopy(
             ChatBotManager.chatbots
@@ -220,6 +227,7 @@ class ChatBotManager:
     def add_message(
         self, text: str, sender: Union[ChatRoles, AvailableChatbots], show: bool = True
     ):
+        print("--- CBM: add_message ---")
         # create the message
         message = {"content": text, "role": sender.value}
 
@@ -231,6 +239,7 @@ class ChatBotManager:
             self.add_message_to_chatbox(text)
 
     def wait_for_input(self):
+        print("--- CBM: wait for input ---")
         if self.mode == "nao":
             # wait until the message is set to
             while not self.convo_pipe.get_user_message_availability():
@@ -252,9 +261,11 @@ class ChatBotManager:
         self.current_chatbot.run_conversation()
 
     def add_message_to_chatbox(self, message: str):
+        print("--- CBM: admtc ---")
         self.convo_pipe.add_bot_message(message)
 
     def start_chat(self, mode: str):
+        print("--- CBM: start chat ---")
         self.currently_chatting = True
         self.mode = mode
 
@@ -269,6 +280,7 @@ class ChatBotManager:
             self.finish_chat()
 
     def finish_chat(self):
+        print("--- CBM: finish chat ---")
         # calculate the total token usage for the conversation
         tokens_usage = 0
         for chatbot in self.chatbots.values():
@@ -288,5 +300,5 @@ class ChatBotManager:
 
 
 from nao_chat.chatbots.small_talk import SMALL_TALK_BOT
-from nao_chat.nao_chat.chatbots.art_pieces import ART_PIECES
+from nao_chat.chatbots.art_pieces import ART_PIECES
 from nao_chat.chatbots.information import INFORMATION

@@ -3,6 +3,8 @@ from redis import Redis
 import sounddevice as sd
 from time import sleep
 from speech_detection import audio_callback, has_speech
+from nao_chat.nao_chat.conversation_pipe import ConversationPipe
+
 
 AUDIO_PATH = "/app/audio_files"
 
@@ -10,7 +12,8 @@ AUDIO_PATH = "/app/audio_files"
 class AudioInputManager:
     def __init__(self):
         self.recorder = Recorder()
-        self.redis = Redis(host="nao-redis", port=6379, db=0)  # TODO
+        self.redis = Redis(host="nao-redis", port=6379, db=0)
+        self.convo_pipe = ConversationPipe()
 
     def start(self, interval: int):
         """This method will start a constantly recording, interrupting it every interval amount of time.
@@ -61,11 +64,27 @@ class AudioInputManager:
                         # if has_speech(f"{AUDIO_PATH}/{speech_audio_filepath}"):
                         #    print("Audio file has actual speech")
                         # send audio recording a retrieve response
+                        command_type = self.redis.get("command_type").decode("utf-8")
+
                         response = post_to_api(
                             speech_audio_filepath,
-                            self.redis.get("command_type").decode("utf-8"),
+                            command_type,
                         )
-                        print(response)
+
+                        if command_type == "chat":
+                            print("Passing user transcription to chatbot")
+                            # put the message on the conversation pipe
+                            self.convo_pipe.add_user_message(response)
+                            # wait for the system response to be available
+                            print("Waiting for chatbot response")
+                            print(self.convo_pipe.get_bot_message_availability())
+                            while not self.convo_pipe.get_bot_message_availability():
+                                print(self.convo_pipe.get_bot_message_availability())
+                                sleep(1)
+
+                            print("Got chatbot response")
+                            response = self.convo_pipe.get_bot_message()
+
                         if response is not None:
                             self.redis.set(f"gpt_response", response)
 

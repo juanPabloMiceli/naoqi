@@ -4,15 +4,6 @@ from typing import Dict, List, Union
 import requests
 import tiktoken
 import logging
-from nao_chat.schemas import *
-from nao_chat.queries import get_rows
-from nao_chat.cfg import (
-    PROMPT_STORE_PATH,
-    SLACK_HOOK_URL_nao_chat,
-    USAGE_LOGGING_PATH,
-    logger,
-)
-import random
 import re
 import datetime as dt
 
@@ -80,23 +71,6 @@ def count_tokens_of_messages(messages: List[Dict[str, str]], model: str) -> int:
 
 
 def log_usage(usage: Dict[int, float]):
-    today = str(dt.date.today())
-    path = f"{USAGE_LOGGING_PATH}/api_usage.json"
-    if os.path.exists(path) is False:
-        file = open(path, "+w")
-        file.write("{}")
-        file.close()
-
-    with open(path, "+r") as file:
-        data = json.loads(file.read())
-        if today in data:
-            data[today].append(usage)
-        else:
-            data[today] = [usage]
-        file.seek(0)
-        json.dump(data, file, indent=4)
-        file.close()
-
     logging.info(f"usage data saved")
 
 
@@ -109,7 +83,7 @@ def read_text_file(path: str) -> str:
     return content
 
 
-def basic_date_parse(possible_date_str: str) -> Union[Date, None]:
+def basic_date_parse(possible_date_str: str) -> Union[dt.date, None]:
     """
     A basic date parser that returns null if the parse failed.
     Use for nullable date variables on chatbots functions
@@ -125,6 +99,6 @@ def basic_date_parse(possible_date_str: str) -> Union[Date, None]:
         A date or None
     """
     try:
-        return datetime.strptime(possible_date_str, "%Y-%m-%d")
+        return dt.datetime.strptime(possible_date_str, "%Y-%m-%d")
     except:
         return None

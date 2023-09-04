@@ -84,7 +84,7 @@ def displayed_art_pieces(chatbot: ChatBot, artist: str = None):
         "art_piece": lambda x: x,
     },
 )
-def query_booked_appointments(chatbot: ChatBot, art_piece: str):
+def is_displayed(chatbot: ChatBot, art_piece: str):
     try:
         ArtPiece(art_piece)
         is_displayed = True
@@ -116,15 +116,21 @@ def query_booked_appointments(chatbot: ChatBot, art_piece: str):
         },
     },
     parsing_functions={
-        "art_piece": lambda x: ArtPiece(x),
+        "art_piece": lambda x: str,
     },
 )
-def guide(chatbot: ChatBot, art_piece: ArtPiece):
-    # locate art piece
-    position = QR_LOCATION[art_piece]
-    execute_move_mission_on_nao(position)
+def guide(chatbot: ChatBot, art_piece: str):
+    try:
+        ArtPiece(art_piece)
+        # locate art piece
+        position = (0, 0)  # QR_LOCATION[art_piece]
+        # execute_move_mission_on_nao(position)
+        print(f"Mission: Move to {position}")
 
-    message = "We've reached art piece location"
+        message = "We've reached art piece location"
 
-    chatbot.add_message(message, ChatRoles.function, function="make_payment")
+    except ValueError:
+        message = f"{art_piece} is not being displayed at the museum."
+
+    chatbot.add_message(message, ChatRoles.function, function="guide")
     chatbot.run_conversation()
