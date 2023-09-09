@@ -1,59 +1,11 @@
 import numpy as np
 import cv2
-from pyzbar.pyzbar import decode
 
+from workspace.utils.qr_decoder import QrDecoder
 from workspace.utils.logger_factory import LoggerFactory
 
 images = ['baldoza360/intento3/original/out21.jpg']#, 'qrArmario120cm.jpg', 'qrArmario240cm.jpg', 'qrArmario280cm.jpg', 'qrArmarioCote.jpg', 'qrArmarioOffset.jpg', '3qrs.jpg', '2qrs.jpg', '122cm-6degrees3qrs.jpg', '174cm24degrees2qrs.jpg', '153cm-15degrees2qrs.jpg']
 
-class QrPoints:
-
-    def __init__(self, polygon):
-        self.center = self.__get_center(polygon)
-        self.top_left = self.__get_top_left(polygon)
-        self.top_right = self.__get_top_right(polygon)
-        self.bottom_left = self.__get_bottom_left(polygon)
-        self.bottom_right = self.__get_bottom_right(polygon)
-        self.middle_top = self.__get_middle_top(polygon)
-        self.middle_bottom = self.__get_middle_bottom(polygon)
-
-    def __get_center(self, polygon):
-        center_x = (polygon[0].x + polygon[1].x + polygon[2].x + polygon[3].x) // 4   
-        center_y = (polygon[0].y + polygon[1].y + polygon[2].y + polygon[3].y) // 4   
-        return [center_x, center_y]
-
-    def __get_middle_top(self, polygon):
-        top_left = self.__get_top_left(polygon)
-        top_right = self.__get_top_right(polygon)
-        middle_x = (top_left[0] + top_right[0]) // 2
-        middle_y = (top_left[1] + top_right[1]) // 2
-        return [middle_x, middle_y]
-
-    def __get_middle_bottom(self, polygon):
-        bottom_left = self.__get_bottom_left(polygon)
-        bottom_right = self.__get_bottom_right(polygon)
-        middle_x = (bottom_left[0] + bottom_right[0]) // 2
-        middle_y = (bottom_left[1] + bottom_right[1]) // 2
-        return [middle_x, middle_y]
-
-    def __get_top_left(self, polygon):
-        return min(self.__get_tops(polygon))
-
-    def __get_top_right(self, polygon):
-        return max(self.__get_tops(polygon))
-
-    def __get_bottom_left(self, polygon):
-        return min(self.__get_bottoms(polygon))
-
-    def __get_bottom_right(self, polygon):
-        return max(self.__get_bottoms(polygon))
-
-    def __get_tops(self, polygon):
-        return sorted(polygon, key=lambda p: p[1])[:2]
-
-    def __get_bottoms(self, polygon):
-        return sorted(polygon, key=lambda p: p[1])[2:]
-        
 class QrData:
     
     def __init__(self, id, distance, angle):
@@ -69,8 +21,8 @@ class QrDetector:
 
     LOGGER = LoggerFactory.get_logger("qr_detector")
 
-    @staticmethod
-    def get_qrs_information(gray_image):
+    @classmethod
+    def get_qrs_information(cls, gray_image):
         '''
             Receives a grayscale image of size 1280x960 and returns the info of found qrs.
 
@@ -83,82 +35,62 @@ class QrDetector:
                 'angle': float
             } 
         '''
-        desired_shape = (QrDetector.HEIGHT, QrDetector.WIDTH)
-        if gray_image.shape != desired_shape:
-            QrDetector.LOGGER.error("Incorrect image shape when detecting qrs {}. Please provide an image with shape {}.".format(gray_image.shape, desired_shape))
-            exit(1)
             
-        binary_image = QrDetector.__binarize_image(gray_image)
-        decoded_qrs = decode(binary_image)
+        decoded_qrs = QrDecoder.decode(gray_image)
         qrs_data = []
 
         for decoded_qr in decoded_qrs:
-            qr_points = QrPoints(decoded_qr.polygon)
-            qr_center_relative_to_image_center = QrDetector.__relative_to_image_center(qr_points.center)
+            qr_center_relative_to_image_center = QrDetector.__relative_to_image_center(decoded_qr.center)
             alpha_degrees = QrDetector.__get_alpha_degrees(qr_center_relative_to_image_center)
-            distance = QrDetector.__get_distance(qr_points)
-            qrs_data.append(QrData(int(decoded_qr.data.decode("utf-8").replace("buenas buenas", "10")), round(distance, 3), round(alpha_degrees, 3)))
+            distance = QrDetector.__get_distance(decoded_qr)
+            qrs_data.append(QrData(decoded_qr.data, round(distance, 3), round(alpha_degrees, 3)))
         return qrs_data
 
 
-    @staticmethod
-    def find_qrs_and_show(rgb_image, save_path="", show=True):
-        aux_image = rgb_image.copy()
-        binary_image = QrDetector.__binarize_image(rgb_image)
-        decoded_qrs = decode(binary_image)
-
-        for decoded_qr in decoded_qrs:
-            polygon = decoded_qr.polygon
-            qr_points = QrPoints(polygon)
-            
-            # Polygon
-            cv2.polylines(rgb_image, np.array([polygon]), True, (255,0,0))
-            # Top left corner
-            cv2.circle(rgb_image, (qr_points.top_left[0], qr_points.top_left[1]), radius=0, color=(0, 0, 255), thickness=5)
-            # Top right corner
-            cv2.circle(rgb_image, (qr_points.top_right[0], qr_points.top_right[1]), radius=0, color=(0, 255, 0), thickness=5)
-            # Bottom left corner
-            cv2.circle(rgb_image, (qr_points.bottom_left[0], qr_points.bottom_left[1]), radius=0, color=(255, 0, 0), thickness=5)
-            # Bottom right corner
-            cv2.circle(rgb_image, (qr_points.bottom_right[0], qr_points.bottom_right[1]), radius=0, color=(255, 0, 255), thickness=5)
-            # Middle of the bottom line
-            cv2.circle(rgb_image, (qr_points.middle_bottom[0], qr_points.middle_bottom[1]), radius=0, color=(231, 0, 123), thickness=5)
-            # Middle of the top line
-            cv2.circle(rgb_image, (qr_points.middle_top[0], qr_points.middle_top[1]), radius=0, color=(123, 0, 231), thickness=5)
-            # QR center
-            cv2.circle(rgb_image, (qr_points.center[0], qr_points.center[1]), radius=0, color=(0, 255, 255), thickness=5)
-            # Image center
-            cv2.circle(rgb_image, (QrDetector.WIDTH//2, QrDetector.HEIGHT//2), radius=0, color=(255, 255, 0), thickness=5)
+    #@staticmethod
+    #def find_qrs_and_show(rgb_image, save_path="", show=True):
+    #    aux_image = rgb_image.copy()
         
-        if show:
-            cv2.imshow('image', rgb_image)
-            cv2.waitKey(0)
-            cv2.destroyAllWindows()
+    #    decoded_qrs = QrDecoder.decode(rgb_image)
+    #    #binary_image = QrDetector.__binarize_image(rgb_image)
+    #    #decoded_qrs = py_quirc.py_decode(binary_image.flatten().tolist(), 1280, 960)
+    #    #decoded_qrs = decode(binary_image)
 
-        if save_path != "":
-            cv2.imwrite("out_photo.jpg", rgb_image)
-            # cv2.imwrite(save_path, aux_image)
-            # cv2.imwrite(save_path.replace("original", "processed"), rgb_image)
-            QrDetector.LOGGER.info("Image " + save_path + " correctly saved.")
+    #    for decoded_qr in decoded_qrs:
+    #        # polygon = decoded_qr.polygon
+    #        # qr_points = QrPoints(polygon)
+            
+    #        # Polygon
+    #        #cv2.polylines(rgb_image, np.array([polygon]), True, (255,0,0))
+    #        # Top left corner
+    #        cv2.circle(rgb_image, (decoded_qr.top_left[0], decoded_qr.top_left[1]), radius=0, color=(0, 0, 255), thickness=5)
+    #        # Top right corner
+    #        cv2.circle(rgb_image, (decoded_qr.top_right[0], decoded_qr.top_right[1]), radius=0, color=(0, 255, 0), thickness=5)
+    #        # Bottom left corner
+    #        cv2.circle(rgb_image, (decoded_qr.bottom_left[0], decoded_qr.bottom_left[1]), radius=0, color=(255, 0, 0), thickness=5)
+    #        # Bottom right corner
+    #        cv2.circle(rgb_image, (decoded_qr.bottom_right[0], decoded_qr.bottom_right[1]), radius=0, color=(255, 0, 255), thickness=5)
+    #        # Middle of the bottom line
+    #        cv2.circle(rgb_image, (decoded_qr.middle_bottom[0], decoded_qr.middle_bottom[1]), radius=0, color=(231, 0, 123), thickness=5)
+    #        # Middle of the top line
+    #        cv2.circle(rgb_image, (decoded_qr.middle_top[0], decoded_qr.middle_top[1]), radius=0, color=(123, 0, 231), thickness=5)
+    #        # QR center
+    #        cv2.circle(rgb_image, (decoded_qr.center[0], decoded_qr.center[1]), radius=0, color=(0, 255, 255), thickness=5)
+    #        # Image center
+    #        cv2.circle(rgb_image, (QrDetector.WIDTH//2, QrDetector.HEIGHT//2), radius=0, color=(255, 255, 0), thickness=5)
+        
+    #    if show:
+    #        cv2.imshow('image', rgb_image)
+    #        cv2.waitKey(0)
+    #        cv2.destroyAllWindows()
+
+    #    if save_path != "":
+    #        cv2.imwrite("out_photo.jpg", rgb_image)
+    #        # cv2.imwrite(save_path, aux_image)
+    #        # cv2.imwrite(save_path.replace("original", "processed"), rgb_image)
+    #        QrDetector.LOGGER.info("Image " + save_path + " correctly saved.")
             
         
-    @staticmethod
-    def __binarize_image(image):
-        if image.ndim == 3:
-            gray_image = cv2.cvtColor(image, cv2.COLOR_RGB2GRAY)
-        else:
-            gray_image = image
-        alpha = 1.5
-        # beta = 5
-        beta = 50
-        gray_image = np.array(np.clip(alpha*gray_image + beta, 0, 255),np.uint8)
-        # blur = cv2.GaussianBlur(gray_image,(3,3),0)
-        #_,th3 = cv2.threshold(gray_image,100,255,cv2.THRESH_BINARY)
-        th3 = gray_image
-        # cv2.imshow('title', th3)
-        # cv2.waitKey(0)
-        return th3
-
     @staticmethod
     def __relative_to_image_center(point):
         return [point[0] - (QrDetector.WIDTH/2), -point[1] + (QrDetector.HEIGHT/2)]

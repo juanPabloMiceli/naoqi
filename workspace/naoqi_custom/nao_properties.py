@@ -2,23 +2,32 @@ import ConfigParser
 
 class NaoProperties:
     properties_file = "workspace/connection.properties"
-    nao_section = "NaoSection"
+    connection_section = "Connection"
+    environment_section = "Environment"
+    config = ConfigParser.RawConfigParser()
+    config.read(properties_file)
     
-    def __init__(self):
-        self.config = ConfigParser.RawConfigParser()
-        self.config.read(self.properties_file)
-    
-    def get_ip(self):
-        return self.config.get(self.nao_section, "nao.ip")
+    @classmethod
+    def get_ip(cls):
+        return cls.config.get(cls.connection_section, "ip")
 
-    def get_port(self):
-        return int(self.config.get(self.nao_section, "nao.port"))
+    @classmethod
+    def get_port(cls):
+        return int(cls.config.get(cls.connection_section, "port"))
 
-    def get_connection_properties(self):
+    @classmethod
+    def testing(cls):
+        robot_mode = cls.config.get(cls.environment_section, "robot_mode")
+        if robot_mode == 'mock':
+            return True
+        if robot_mode == 'robot':
+            return False
+        print('\'{}\' is not a valid robot mode. Valid modes: {{mock, robot}}'.format(robot_mode))
+        exit(1)
+
+    @classmethod
+    def get_connection_properties(cls):
         '''
         Returns a tuple (str: ip, int: port)
         '''
-        return self.get_ip(), self.get_port() 
-
-if __name__ == "__main__":
-    print("nao properties: {}".format(NaoProperties().get_connection_properties()))
+        return cls.get_ip(), cls.get_port() 
