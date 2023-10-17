@@ -4,6 +4,7 @@ import sounddevice as sd
 from time import sleep
 from speech_detection import audio_callback, has_speech
 from nao_chat.nao_chat.conversation_pipe import ConversationPipe
+import TalkController
 
 
 AUDIO_PATH = "/app/audio_files"
@@ -14,6 +15,7 @@ class AudioInputManager:
         self.recorder = Recorder()
         self.redis = Redis(host="nao-redis", port=6379, db=0)
         self.convo_pipe = ConversationPipe()
+        self.nao_talk_controller = TalkController()
 
     def start(self, interval: int):
         """This method will start a constantly recording, interrupting it every interval amount of time.
@@ -86,7 +88,20 @@ class AudioInputManager:
                             response = self.convo_pipe.get_bot_message()
 
                         if response is not None:
-                            self.redis.set(f"gpt_response", response)
+                            # execute the talking mechanism
+
+                            # prevent further hearing
+                            self.redis.set("avoid_hearing", 1)
+
+                            # pass the response onto the NAO via redis
+                            # self.redis.set(f"gpt_response", response)
+
+                            # execute the t2s of the NAO
+                            self.nao_talk_controller.talk(response)
+
+                            # clear the response space and re-allow hearing
+                            self.redis.delete("gpt_response")
+                            self.redis.set("avoid_hearing", 0)
 
                     self.recorder.start_recording()
                 except Exception as e:

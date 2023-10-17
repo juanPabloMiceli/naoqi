@@ -1,22 +1,21 @@
-
 import qi
 from argparse import ArgumentParser, RawTextHelpFormatter
 import sys
 
 from workspace.naoqi_custom.nao_properties import NaoProperties
 
-class PosturesController:
 
+class PosturesController:
     __raw_string_to_valid_string_dict = {
-            "standinit": "StandInit",
-            "sitrelax": "SitRelax",
-            "standzero": "StandZero",
-            "lyingbelly": "LyingBelly",
-            "lyingback": "LyingBack",
-            "stand": "Stand",
-            "crouch": "Crouch",
-            "sit": "Sit",
-        }
+        "standinit": "StandInit",
+        "sitrelax": "SitRelax",
+        "standzero": "StandZero",
+        "lyingbelly": "LyingBelly",
+        "lyingback": "LyingBack",
+        "stand": "Stand",
+        "crouch": "Crouch",
+        "sit": "Sit",
+    }
 
     def __init__(self, session):
         self.service = session.service("ALRobotPosture")
@@ -64,7 +63,6 @@ class PosturesController:
         return self.__raw_string_to_valid_string_dict[posture_raw_string.lower()]
 
 
-
 def main(session, posture):
     postures_controller = PosturesController(session)
     postures_controller.move_to(posture)
@@ -72,27 +70,31 @@ def main(session, posture):
 
 if __name__ == "__main__":
     parser = ArgumentParser(formatter_class=RawTextHelpFormatter)
-    parser.add_argument("--posture", type=str, default="standInit",
-                        help="Robot goal posture. Default: StandInit\n" +
-                             "Posible postures (case insensitive): \n" +
-                             "StandInit \n" +
-                             "SitRelax \n" +
-                             "StandZero \n" +
-                             "LyingBelly \n" +
-                             "LyingBack \n" +
-                             "Stand \n" +
-                             "Crouch \n" +
-                             "Sit \n"
-                        )
+    parser.add_argument(
+        "--posture",
+        type=str,
+        default="standInit",
+        help="Robot goal posture. Default: StandInit\n"
+        + "Posible postures (case insensitive): \n"
+        + "StandInit \n"
+        + "SitRelax \n"
+        + "StandZero \n"
+        + "LyingBelly \n"
+        + "LyingBack \n"
+        + "Stand \n"
+        + "Crouch \n"
+        + "Sit \n",
+    )
 
-    
     IP, PORT = NaoProperties().get_connection_properties()
     args = parser.parse_args()
     session = qi.Session()
     try:
         session.connect("tcp://" + IP + ":" + str(PORT))
     except RuntimeError:
-        print ("Can't connect to Naoqi at ip \"" + IP + "\" on port " + str(PORT) +".\n"
-               "Please check your script arguments. Run with -h option for help.")
+        print(
+            "Can't connect to Naoqi at ip \"" + IP + '" on port ' + str(PORT) + ".\n"
+            "Please check your script arguments. Run with -h option for help."
+        )
         sys.exit(1)
     main(session, args.posture)
