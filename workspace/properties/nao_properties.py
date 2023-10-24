@@ -38,20 +38,20 @@ class NaoProperties:
         return cls.get_ip(), cls.get_port()
     
     @classmethod
-    def fps(cls):
+    def simulation_fps(cls):
         return cls.config.getfloat(cls.simulation_section, 'frames_per_second')
     
     @classmethod
     def forward_speed(cls):
-        return cls.config.getfloat(cls.simulation_section, 'forward_centimeters_per_second') / cls.fps()
+        return cls.config.getfloat(cls.simulation_section, 'forward_centimeters_per_second') / cls.simulation_fps()
 
     @classmethod
     def backward_speed(cls):
-        return cls.config.getfloat(cls.simulation_section, 'backward_centimeters_per_second') / cls.fps()
+        return cls.config.getfloat(cls.simulation_section, 'backward_centimeters_per_second') / cls.simulation_fps()
 
     @classmethod
     def rotation_speed(cls):
-        return cls.config.getfloat(cls.simulation_section, 'rotation_degrees_per_second') / cls.fps()
+        return cls.config.getfloat(cls.simulation_section, 'rotation_degrees_per_second') / cls.simulation_fps()
 
     @classmethod
     def qr_detection_angle(cls):
@@ -64,3 +64,7 @@ class NaoProperties:
     @classmethod
     def qr_min_distance(cls):
         return cls.config.getint(cls.simulation_section, 'qr_minimum_detection_distance_centimeters')
+    
+    @classmethod
+    def nao_fps(cls):
+        return cls.config.getfloat(cls.simulation_section, 'nao_frames_per_second')

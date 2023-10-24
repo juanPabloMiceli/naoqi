@@ -1,14 +1,17 @@
 import numpy as np
 from pyzbar.pyzbar import decode
-from workspace.utils.qr_data import QrData
+from workspace.utils.image_qr_data import ImageQrData
 
 class QrDecoder:
+    '''
+    QrDecoder decodes a grayscale image into an array of qrs information (what data do they hold and where are they in the image)
+    '''
     
     @classmethod
     def decode(cls, image):
         binary_image = cls.__binarize_image(image)
         decoded_qrs = decode(binary_image)
-        return [QrData(decoded_qr) for decoded_qr in decoded_qrs]
+        return [ImageQrData(decoded_qr) for decoded_qr in decoded_qrs]
 
 
     @staticmethod

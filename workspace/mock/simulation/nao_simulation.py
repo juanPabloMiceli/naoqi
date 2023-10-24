@@ -43,7 +43,7 @@ class NaoSimulation(Thread):
         pygame.draw.rect(self.screen, LIGHT_GRAY, (self.map_offset[0], self.map_offset[1], self._map.width, self._map.height))
         
         for qr in self._map.qrs:
-            qr_position = np.array([qr.x, qr.y]) + self.map_offset
+            qr_position = qr.position + self.map_offset
             pygame.draw.circle(self.screen, PURPLE, qr_position, 3)
     
     def __draw_real_nao(self):

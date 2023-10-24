@@ -25,7 +25,7 @@ class MovementDaemon(Thread):
             current_position = self.shared_memory.get_position_simulation()
             self.shared_memory.set_position_simulation(walk_vector + current_position)
             end = time.time()
-            sleep_time = max(0, (1 / NaoProperties.fps()) - (end - start))
+            sleep_time = max(0, (1 / NaoProperties.simulation_fps()) - (end - start))
             time.sleep(sleep_time)
 
     def move(self, x, y, direction):

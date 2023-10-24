@@ -2,19 +2,24 @@ import numpy as np
 import threading
 import math
 import time
+from workspace.location.locator_and_mapper import LocatorAndMapper
 from workspace.mock.movement_daemon import MovementDaemon
+from workspace.properties.nao_properties import NaoProperties
 from workspace.utils.logger_factory import LoggerFactory
 import workspace.utils.geometry as geometry
+from workspace.utils.qr_position_data import QrPositionData
 
 class NaoMock:
 
-    def __init__(self, shared_memory, map):
+    def __init__(self, shared_memory, _map):
         self.LOGGER = LoggerFactory.get_logger("NaoMock", dummy=True)
         self.shared_memory = shared_memory
-        self.map = map
+        self._map = _map
         self.movement_daemon = MovementDaemon(self.shared_memory)
         self.movement_daemon.start()
         self.qrs_in_vision = np.array([])
+        self.locator_and_mapper = LocatorAndMapper(self.shared_memory, self, _map)
+        self.locator_and_mapper.start()
 
     def head_leds_on(self):
         self.shared_memory.set_brain_leds(True)
@@ -34,27 +39,32 @@ class NaoMock:
             awareness_status = 'disabled'
         self.LOGGER.info('Awareness {}'.format(awareness_status))
 
-    def get_frame(self):
-        # QR range: [30cm 1.5mts] [-30deg, 30deg]
-        self.qrs_in_vision = np.array([])
-        for qr in self.map.qrs:
-            distance = geometry.distance(qr.position, self.get_position())
-            if distance < 30 or distance > 200:
-                continue
-            nao_to_qr_direction = geometry.direction(self.get_position(), qr.position) 
-            nao_direction_vector = geometry.rotate(np.array([1, 0]), math.radians(self.get_direction())) 
+    def get_qrs_in_vision(self):
+        start = time.time()
 
-            angle_to_qr = geometry.angle_between_vectors(nao_direction_vector, nao_to_qr_direction)
-            if math.degrees(angle_to_qr) > 30 or math.degrees(angle_to_qr) < -30:
+        qrs_in_vision = []
+        for qr in self._map.qrs:
+            distance = geometry.distance(qr.position, self.get_position_simulation())
+            if distance < NaoProperties.qr_min_distance() or distance > NaoProperties.qr_max_distance():
                 continue
-            self.qrs_in_vision = np.append(self.qrs_in_vision, qr)
-        time.sleep(1)
+            nao_to_qr_direction = geometry.direction(self.get_position_simulation(), qr.position) 
+            nao_direction_vector = geometry.rotate(np.array([1, 0]), math.radians(self.get_direction_simulation())) 
+
+            angle_to_qr = math.degrees(geometry.angle_between_vectors(nao_to_qr_direction, nao_direction_vector))
+            if angle_to_qr > NaoProperties.qr_detection_angle() / 2 or angle_to_qr < -(NaoProperties.qr_detection_angle() / 2):
+                continue
+            qrs_in_vision.append(QrPositionData(qr.id, distance, angle_to_qr))
+
+        end = time.time()
+        sleep_time = max(0, (1 / NaoProperties.nao_fps()) - (end - start))
+        time.sleep(sleep_time)
+
+        return qrs_in_vision
 
     def look_at(self, x_angle_degrees, y_angle_degrees):
         self.LOGGER.info('New head position ({}, {})'.format(x_angle_degrees, y_angle_degrees))
 
     def walk_forward(self):
-        # 80cm in 7 seconds
         self.movement_daemon.move(1, 0, 0)
         self.LOGGER.info('Walking forward')
 
@@ -63,7 +73,6 @@ class NaoMock:
         self.LOGGER.info('Stop moving')
 
     def walk_backward(self):
-        # 80cm in 8.6 seconds
         self.movement_daemon.move(-1, 0, 0)
         self.LOGGER.info('Walking backward')
 
@@ -71,12 +80,10 @@ class NaoMock:
         self.LOGGER.info('Resting')
 
     def rotate_counter_clockwise(self):
-        # 180 degrees in 7 seconds
         self.movement_daemon.move(0, 0, -1)
         self.LOGGER.info('Rotating clockwise')
 
     def rotate_clockwise(self):
-        # 180 degrees in 7 seconds
         self.movement_daemon.move(0, 0, 1)
         self.LOGGER.info('Rotating counter clockwise')
 
@@ -94,5 +101,5 @@ class NaoMock:
 
     def debug_qrs(self):
         while True:
-            self.get_frame()
+            self.get_qrs_in_vision()
 

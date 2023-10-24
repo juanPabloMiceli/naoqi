@@ -1,5 +1,6 @@
 import sys
 import qi
+from workspace.location.qr_detector import QrDetector
 from workspace.properties.nao_properties import NaoProperties
 from workspace.naoqi_custom.leds_controller import LedsController
 from workspace.naoqi_custom.awareness_controller import AwarenessController
@@ -73,3 +74,6 @@ class Nao:
             print('QRs decoded, I found {} of them.\n'.format(len(qrs_data)))
             for qr_data in qrs_data:
                 print(qr_data)
+
+    def get_qrs_in_vision(self):
+        return QrDetector.get_qrs_information(self.get_frame())

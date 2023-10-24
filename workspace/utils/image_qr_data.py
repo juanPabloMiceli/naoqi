@@ -1,4 +1,4 @@
-class QrData:
+class ImageQrData:
     def __init__(self, decoded_qr):
         polygon = decoded_qr.polygon
         self.data = decoded_qr.data
