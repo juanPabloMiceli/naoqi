@@ -2,7 +2,7 @@ import sys
 import os
 import time
 from workspace.naoqi_custom.movement_controller import MovementController
-from workspace.naoqi_custom.nao_properties import NaoProperties
+from workspace.properties.nao_properties import NaoProperties
 from naoqi import qi
 from threading import Thread
 
@@ -34,7 +34,7 @@ class KeyboardController(Thread):
                     self.movement_controller.rotate_clockwise()
                     print("Derecha")
                 elif character == 'z':
-                    self.movement_controller.non_walk()
+                    self.movement_controller.stop_moving()
                     print("STOP")
                 elif character == 'q':
                     self.movement_controller.rest()

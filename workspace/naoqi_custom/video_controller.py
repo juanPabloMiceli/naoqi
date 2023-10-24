@@ -11,7 +11,7 @@ from os.path import exists
 import numpy as np
 import cv2
 from workspace.utils.logger_factory import LoggerFactory
-from workspace.naoqi_custom.nao_properties import NaoProperties
+from workspace.properties.nao_properties import NaoProperties
 
 from workspace.naoqi_custom.proxy_factory import ProxyFactory
 
@@ -61,14 +61,13 @@ class VideoController:
         self.video_id = self.proxy.subscribeCamera("My_Test_Video", 0, 3, 0, 30)
         self.LOGGER.info("Generated new video id {}".format(self.video_id))
 
-
-    def get_nao_image(self):
-        return self.proxy.getImageRemote(self.video_id)
-
-    def get_raw_gray_image(self):
-        nao_image = self.get_nao_image()
+    def get_current_gray_image(self):
+        nao_image = self.__get_nao_image()
         image_bytes = ImageContainer(nao_image).b_array
         return np.frombuffer(image_bytes, dtype=np.uint8).reshape(self.image_shape)
+
+    def __get_nao_image(self):
+        return self.proxy.getImageRemote(self.video_id)
 
     def __del__(self):
         self.proxy.unsubscribe(self.video_id)

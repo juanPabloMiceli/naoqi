@@ -5,7 +5,7 @@ import qi
 
 from workspace.location.locator_and_mapper import LocatorAndMapper
 from workspace.utils.logger_factory import LoggerFactory
-from workspace.naoqi_custom.nao_properties import NaoProperties
+from workspace.properties.nao_properties import NaoProperties
 from workspace.naoqi_custom.awareness_controller import AwarenessController
 from workspace.naoqi_custom.head_controller import HeadController
 from workspace.naoqi_custom.leds_controller import LedsController

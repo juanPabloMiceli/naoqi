@@ -1,43 +1,17 @@
 import time
 
-from workspace.naoqi_custom.nao_properties import NaoProperties
-from workspace.naoqi_custom.leds_controller import LedsController
+def turn_leds_on(args, nao):
+    nao.head_leds_on()
 
-ON_INSTRUCTION = 'on'
-OFF_INSTRUCTION = 'off'
-BLINK_INSTRUCTION = 'blink'
+def turn_leds_off(args, nao):
+    nao.head_leds_off()
 
-if NaoProperties.testing():
-    def switch_leds(instruction):
-        print('[Dummy] Leds instruction: {}'.format(instruction))
-else:
-    def switch_leds(instruction):
-        IP, PORT = NaoProperties().get_connection_properties()
-        leds_controller = LedsController(IP, PORT)
-
-        if instruction == ON_INSTRUCTION:
-            leds_controller.on()
-            return
-        if instruction == OFF_INSTRUCTION:
-            leds_controller.off()
-            return
-        if instruction == BLINK_INSTRUCTION:
-            while True:
-                leds_controller.on()
-                time.sleep(1)
-                leds_controller.off()
-                time.sleep(1)
-            return
-        print('Unknown instruction')
-
-def turn_leds_on(args):
-    switch_leds(ON_INSTRUCTION)
-
-def turn_leds_off(args):
-    switch_leds(OFF_INSTRUCTION)
-
-def blink_leds(args):
-    switch_leds(BLINK_INSTRUCTION)
+def blink_leds(args, nao):
+    while True:
+        nao.head_leds_on()
+        time.sleep(1)
+        nao.head_leds_off()
+        time.sleep(1)
 
 def add_parser(subparser):
     parser = subparser.add_parser('leds', help='Play with NAO leds')

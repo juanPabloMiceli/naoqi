@@ -1,0 +1,8 @@
+asttokens==2.4.0
+colorama==0.4.6
+executing==2.0.0
+numpy==1.16.6
+pygame==2.0.3
+Pygments==2.5.2
+six==1.16.0
+typing==3.10.0.0

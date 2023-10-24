@@ -1,6 +1,6 @@
 from workspace.naoqi_custom.awareness_controller import AwarenessController
 from workspace.naoqi_custom.head_controller import HeadController
-from workspace.naoqi_custom.nao_properties import NaoProperties
+from workspace.properties.nao_properties import NaoProperties
 from workspace.naoqi_custom.proxy_factory import ProxyFactory
 import qi
 import argparse

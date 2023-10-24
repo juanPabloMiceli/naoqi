@@ -1,7 +1,7 @@
 import time
 
 from workspace.utils.logger_factory import LoggerFactory
-from workspace.naoqi_custom.nao_properties import NaoProperties
+from workspace.properties.nao_properties import NaoProperties
 
 from workspace.naoqi_custom.proxy_factory import ProxyFactory
 

@@ -36,11 +36,11 @@ LocatorAndMapper is in charge of updating the NAO location in real time.
 It will run in a separate thread so as not to disturb other threads.
 '''
 class LocatorAndMapper(Thread):
-    def __init__(self, memory, video_controller, positions_json=None):
+    def __init__(self, memory, nao, positions_json=None):
         super(LocatorAndMapper, self).__init__()
         self.LOGGER = LoggerFactory.get_logger("LOCATOR_MAPPER")
         self.memory = memory
-        self.video_controller = video_controller
+        self.nao = nao
         self.positions = np.array([])
         if positions_json != None:
             self.positions = self._load_json(positions_json)

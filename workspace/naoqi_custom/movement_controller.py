@@ -3,7 +3,7 @@ import time
 # from workspace.location.qr_detector import QrDetector
 from workspace.utils.geometry import distance, direction
 from workspace.naoqi_custom.proxy_factory import ProxyFactory
-from workspace.naoqi_custom.nao_properties import NaoProperties
+from workspace.properties.nao_properties import NaoProperties
 from naoqi import qi
 import numpy as np
 from threading import Thread
@@ -69,7 +69,7 @@ class MovementController(Thread):
     def walk_backward(self):
         self.motion_proxy.move(-0.2, 0, 0)
 
-    def non_walk(self):
+    def stop_moving(self):
         self.motion_proxy.move(0, 0, 0)
 
     def rest(self):

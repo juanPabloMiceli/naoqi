@@ -5,7 +5,7 @@ import time
 
 import qi
 
-from workspace.naoqi_custom.nao_properties import NaoProperties
+from workspace.properties.nao_properties import NaoProperties
 
 
 class HeadController:
