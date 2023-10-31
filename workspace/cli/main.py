@@ -7,23 +7,8 @@ import workspace.cli.parsers.move_parser as move_parser
 import workspace.cli.parsers.advanced_movement_parser as advanced_movement_parser
 import argparse
 
-from workspace.properties.nao_properties import NaoProperties
-from workspace.mock.nao_mock import NaoMock
 from workspace.robot.nao_shared_memory import NaoSharedMemory
-from workspace.maps.map import Map
-
-
-def get_nao(shared_memory):
-    if NaoProperties.testing():
-        _map = Map('workspace/maps/square_map.json')
-        nao = NaoMock(shared_memory, _map)
-        if NaoProperties.simulation_on():
-            from workspace.mock.simulation.nao_simulation import NaoSimulation
-            NaoSimulation(nao, _map).start()
-        return nao
-    else:
-        from workspace.robot.nao import Nao
-        return Nao(shared_memory)
+from workspace.utils.nao_factory import NaoFactory
 
 def add_subparsers(subparsers):
     subparsers = parser.add_subparsers(title='Available capabilities')
@@ -43,6 +28,6 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     if hasattr(args, 'func'):
-        args.func(args, get_nao(NaoSharedMemory()))
+        args.func(args, NaoFactory.create(NaoSharedMemory()))
     else:
         parser.print_help()

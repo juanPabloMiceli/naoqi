@@ -5,6 +5,7 @@ import numpy as np
 class Automata(Thread):
     def __init__(self,module_list,memory,verbose=True):
         super(Automata,self).__init__()
+        self.setDaemon(True)
 
         self._controllable_events = []
 

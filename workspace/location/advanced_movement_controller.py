@@ -44,7 +44,6 @@ class AdvancedMovementController:
 
             self.__rotate_to(target_angle)
             self.nao.stop_moving()
-            self.shared_memory.add_message('GOAL!')
         finally:
             self.lock.release()
 
