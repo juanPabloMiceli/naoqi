@@ -32,9 +32,17 @@ class TalkController:
         self.animated_speech_cfg = ProxyFactory.get_proxy("ALAnimatedSpeech", ip, port)
         self.animated_speech_cfg.setBodyLanguageModeFromStr("disabled")
 
+        self.awareness = ProxyFactory.get_proxy("ALBasicAwareness", ip, port)
+
         self.redis_conn = Redis()
 
     def start_talk(self):
+        # enable initiative tracking
+        self.awareness.startAwareness()
+        self.awareness.setStimulusDetectionEnabled("People", True)
+        self.awareness.setEngagementMode("FullyEngaged")
+        self.awareness.setTrackingMode("BodyRotation")
+
         # enable talk on redis
         self.redis_conn.set("avoid_hearing", 0)
 
