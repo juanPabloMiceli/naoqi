@@ -1,7 +1,7 @@
 import sys
 import os
 import time
-from workspace.naoqi_custom.movement_controller import MovementController
+from workspace.naoqi_custom.motion_controller import MotionController
 from workspace.properties.nao_properties import NaoProperties
 from naoqi import qi
 from threading import Thread
@@ -64,7 +64,7 @@ if __name__ == "__main__":
                 "Please check your script arguments. Run with -h option for help.")
         sys.exit(1)
 
-    movement_controller = MovementController(IP, PORT, None)
+    movement_controller = MotionController(IP, PORT, None)
 
     keyboard_controller = KeyboardController(movement_controller)
     keyboard_controller.run()

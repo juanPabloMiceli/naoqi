@@ -6,7 +6,7 @@ from workspace.naoqi_custom.leds_controller import LedsController
 from workspace.naoqi_custom.awareness_controller import AwarenessController
 from workspace.naoqi_custom.video_controller import VideoController
 from workspace.naoqi_custom.head_controller import HeadController
-from workspace.naoqi_custom.movement_controller import MovementController
+from workspace.naoqi_custom.motion_controller import MotionController
 from workspace.location.locator_and_mapper import LocatorAndMapper
 from workspace.utils.qr_decoder import QrDecoder
 
@@ -19,7 +19,7 @@ class Nao:
         self.awareness_controller = AwarenessController(self.session)
         self.video_controller = VideoController(self.ip, self.port)
         self.head_controller = HeadController(self.session)
-        self.movement_controller = MovementController(self.ip, self.port, None)
+        self.movement_controller = MotionController(self.ip, self.port, None)
         self.position_updater = LocatorAndMapper(shared_memory, self)
 
 

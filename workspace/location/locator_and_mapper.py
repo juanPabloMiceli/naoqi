@@ -25,11 +25,16 @@ class LocatorAndMapper(Thread):
         while True:
             qrs_in_vision = self.nao.get_qrs_in_vision()
             nao_position, nao_direction = self.__get_nao_position_and_direction(qrs_in_vision)
-            self.memory.set_position(nao_position)
-            self.memory.set_direction(nao_direction)
-            # self._add_information(qrs_in_vision)
+            if nao_position is not None and nao_direction is not None:
+                self.memory.set_nao_is_lost(False)
+                self.memory.set_position(nao_position)
+                self.memory.set_direction(math.degrees(nao_direction))
+            else:
+                self.memory.set_nao_is_lost(True)
         
     def __get_nao_position_and_direction(self, qrs_in_vision):
+        if len(qrs_in_vision) < 2:
+            return None, None
         most_left_qr = min(qrs_in_vision, key=lambda qr: qr.angle)
         most_right_qr = max(qrs_in_vision, key=lambda qr: qr.angle)
 

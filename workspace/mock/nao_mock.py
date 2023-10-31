@@ -1,7 +1,7 @@
 import numpy as np
-import threading
 import math
 import time
+from workspace.location.advanced_movement_controller import AdvancedMovementController
 from workspace.location.locator_and_mapper import LocatorAndMapper
 from workspace.mock.movement_daemon import MovementDaemon
 from workspace.properties.nao_properties import NaoProperties
@@ -20,6 +20,11 @@ class NaoMock:
         self.qrs_in_vision = np.array([])
         self.locator_and_mapper = LocatorAndMapper(self.shared_memory, self, _map)
         self.locator_and_mapper.start()
+        self.advanced_movement_controller = AdvancedMovementController(self, shared_memory)
+        self.LOGGER.info('Starting robot...')
+        time.sleep(2)
+        self.LOGGER.info('Robot started...')
+
 
     def head_leds_on(self):
         self.shared_memory.set_brain_leds(True)
@@ -75,6 +80,19 @@ class NaoMock:
     def walk_backward(self):
         self.movement_daemon.move(-1, 0, 0)
         self.LOGGER.info('Walking backward')
+    
+    def move_to(self, x, y, final_angle_degrees):
+        self.advanced_movement_controller.move_to(np.array([x, y]), final_angle_degrees)
+
+    def move_to_goal(self):
+        goal_position, goal_direction = self.get_goal()
+        if goal_position is None:
+            print('No goal defined!')
+            return
+        self.move_to(goal_position[0], goal_position[1], goal_direction)
+
+    def rotate_to(self, target_angle_degrees):
+        self.advanced_movement_controller.rotate_to(target_angle_degrees)
 
     def rest(self):
         self.LOGGER.info('Resting')
@@ -98,6 +116,19 @@ class NaoMock:
     
     def get_direction_simulation(self):
         return self.shared_memory.get_direction_simulation()
+    
+    def is_lost(self):
+        return self.shared_memory.get_nao_is_lost()
+    
+    def set_is_lost(self, new_value):
+        return self.shared_memory.set_nao_is_lost(new_value)
+    
+    def new_goal(self, goal_position, target_direction_degrees):
+        self.shared_memory.set_current_goal_position(goal_position)
+        self.shared_memory.set_current_goal_direction(target_direction_degrees)
+    
+    def get_goal(self):
+        return (self.shared_memory.get_current_goal_position(), self.shared_memory.get_current_goal_direction())
 
     def debug_qrs(self):
         while True:

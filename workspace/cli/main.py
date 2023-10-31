@@ -4,12 +4,12 @@ import workspace.cli.parsers.debug_qrs_parser as debug_qrs_parser
 import workspace.cli.parsers.start_camera_parser as start_camera_parser
 import workspace.cli.parsers.look_at_parser as look_at_parser
 import workspace.cli.parsers.move_parser as move_parser
+import workspace.cli.parsers.advanced_movement_parser as advanced_movement_parser
 import argparse
 
 from workspace.properties.nao_properties import NaoProperties
 from workspace.mock.nao_mock import NaoMock
 from workspace.robot.nao_shared_memory import NaoSharedMemory
-import threading
 from workspace.maps.map import Map
 
 
@@ -34,6 +34,7 @@ def add_subparsers(subparsers):
     start_camera_parser.add_parser(subparsers)
     look_at_parser.add_parser(subparsers)
     move_parser.add_parser(subparsers)
+    advanced_movement_parser.add_parser(subparsers)
 
 
 if __name__ == '__main__':
