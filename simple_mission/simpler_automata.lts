@@ -1,4 +1,0 @@
-A = (event -> B)
-B = (on -> C)
-C = (event -> D)
-D = (off -> A)

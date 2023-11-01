@@ -4,3 +4,4 @@ naoSDKPython/
 __pycache__
 sync_with_nao.sh
 .vscode
+.venv
