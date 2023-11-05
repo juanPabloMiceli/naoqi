@@ -7,10 +7,10 @@ import qi
 
 from workspace.naoqi_custom.leds_controller import LedsController
 
-from workspace.trivial_mission.sharedmem import SharedMem
-from workspace.trivial_mission.module_leds import ModuleLeds
-from workspace.trivial_mission.sensing_trivial import SensingTrivial
-from workspace.trivial_mission.planner_automata import Automata
+from workspace.blinking_leds_mission.sharedmem import SharedMem
+from workspace.blinking_leds_mission.module_leds import ModuleLeds
+from workspace.blinking_leds_mission.sensing_trivial import SensingTrivial
+from workspace.blinking_leds_mission.planner_automata import Automata
 
 LOGGER = LoggerFactory.get_logger("main")
 def main(session, ip, port):
@@ -26,7 +26,7 @@ def main(session, ip, port):
 
     # Load and start automata
     automata = Automata(module_list, memory, verbose=True)
-    automata.load_automata_from_file("workspace/trivial_mission/trivial_automata.txt")
+    automata.load_automata_from_file("workspace/blinking_leds_mission/blinking_leds_automata.txt")
     automata.start()
 
     dt_seconds = 0.1
