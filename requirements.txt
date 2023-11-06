@@ -10,3 +10,4 @@ Pygments==2.5.2
 pyzbar==0.1.9
 six==1.16.0
 typing==3.10.0.0
+redis==2.7.5

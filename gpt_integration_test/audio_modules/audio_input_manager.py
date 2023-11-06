@@ -4,7 +4,6 @@ import sounddevice as sd
 from time import sleep
 from speech_detection import audio_callback, has_speech
 from nao_chat.nao_chat.conversation_pipe import ConversationPipe
-import TalkController
 
 
 AUDIO_PATH = "/app/audio_files"
@@ -15,7 +14,11 @@ class AudioInputManager:
         self.recorder = Recorder()
         self.redis = Redis(host="nao-redis", port=6379, db=0)
         self.convo_pipe = ConversationPipe()
-        self.nao_talk_controller = TalkController()
+        self.redis.delete("speech_detected")
+
+    @property
+    def speech_detected(self):
+        return self.redis.get("speech_detected") == b"1"
 
     def start(self, interval: int):
         """This method will start a constantly recording, interrupting it every interval amount of time.
@@ -23,7 +26,10 @@ class AudioInputManager:
         """
 
         def stream_callback(indata, frames, time, status):
-            avoid_hearing = self.redis.get("avoid_hearing") == b"1"
+            avoid_hearing = (
+                self.redis.get("avoid_hearing") == b"1"
+                or self.redis.get("talk_enabled") != b"1"
+            )
             speech_detected_value = None
             if not avoid_hearing:
                 speech_detected_value = audio_callback(indata, frames, time, status)
@@ -45,14 +51,14 @@ class AudioInputManager:
                     sleep(interval)  # Wait for the specified interval
 
                     # Check if the redis key indicates not to interrupt recording
-                    if self.redis.get("speech_detected") != b"1":
+                    if not self.speech_detected:
                         self.recorder.stop_recording(
                             "noise.wav"
                         )  # Stop audio recording
                         self.recorder.start_recording()
                     else:
                         print("Speech detected")
-                        while self.redis.get("speech_detected") == b"1":
+                        while self.speech_detected:
                             sleep(0.5)
                         print("Speech undetected")
                         speech_tag = self.redis.get("speech_tag").decode("utf-8")
@@ -97,10 +103,13 @@ class AudioInputManager:
                             # self.redis.set(f"gpt_response", response)
 
                             # execute the t2s of the NAO
-                            self.nao_talk_controller.talk(response)
+                            self.redis.set("NAO_response", response)
 
-                            # clear the response space and re-allow hearing
-                            self.redis.delete("gpt_response")
+                            # wait for nao clearing
+                            while self.redis.get("NAO_response") is not None:
+                                sleep(0.5)
+
+                            # re-allow hearing
                             self.redis.set("avoid_hearing", 0)
 
                     self.recorder.start_recording()

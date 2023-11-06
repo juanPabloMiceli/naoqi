@@ -17,7 +17,7 @@ LOGGER = LoggerFactory.get_logger("main")
 shared_memory = NaoSharedMemory()
 nao = NaoFactory.create(shared_memory)
 
-redis = Redis()  # TODO set a redis conn
+redis = Redis("127.0.0.1", 6379, 0)
 
 # fail if no talking services are working
 # TODO

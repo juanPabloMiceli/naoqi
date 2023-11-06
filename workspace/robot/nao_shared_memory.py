@@ -1,21 +1,24 @@
 import numpy as np
 from multiprocessing import Value, Queue
+from redis import Redis
+
 
 class NaoSharedMemory:
     def __init__(self):
-        self.__brain_leds = Value('b', False)
-        self.__x_position = Value('f', 0.0)
-        self.__y_position = Value('f', 0.0)
-        self.__direction = Value('f', 0.0)
-        self.__x_position_simulation = Value('f', 150.0)
-        self.__y_position_simulation = Value('f', 150.0)
-        self.__direction_simulation = Value('f', 45.0)
-        self.__nao_is_lost = Value('b', True)
-        self.__current_goal_x = Value('f', -1000000.0)
-        self.__current_goal_y = Value('f', -1000000.0)
-        self.__current_goal_direction = Value('f', 0.0)
+        self.__brain_leds = Value("b", False)
+        self.__x_position = Value("f", 0.0)
+        self.__y_position = Value("f", 0.0)
+        self.__direction = Value("f", 0.0)
+        self.__x_position_simulation = Value("f", 150.0)
+        self.__y_position_simulation = Value("f", 150.0)
+        self.__direction_simulation = Value("f", 45.0)
+        self.__nao_is_lost = Value("b", True)
+        self.__current_goal_x = Value("f", -1000000.0)
+        self.__current_goal_y = Value("f", -1000000.0)
+        self.__current_goal_direction = Value("f", 0.0)
         self.__event_queue = Queue()
-    
+        self.__redis_conn = Redis
+
     def set_brain_leds(self, new_value):
         with self.__brain_leds.get_lock():
             self.__brain_leds.value = new_value
@@ -47,7 +50,9 @@ class NaoSharedMemory:
             self.__y_position_simulation.value = new_position_simulation[1]
 
     def get_position_simulation(self):
-        return np.array([self.__x_position_simulation.value, self.__y_position_simulation.value])
+        return np.array(
+            [self.__x_position_simulation.value, self.__y_position_simulation.value]
+        )
 
     def get_direction_simulation(self):
         return self.__direction_simulation.value
@@ -56,14 +61,14 @@ class NaoSharedMemory:
         new_direction_simulation %= 360
         with self.__direction_simulation.get_lock():
             self.__direction_simulation.value = new_direction_simulation
-    
+
     def set_nao_is_lost(self, new_value):
         with self.__nao_is_lost.get_lock():
             self.__nao_is_lost.value = new_value
-    
+
     def get_nao_is_lost(self):
         return self.__nao_is_lost.value
-    
+
     def set_current_goal_position(self, new_position):
         with self.__current_goal_x.get_lock():
             self.__current_goal_x.value = new_position[0]
@@ -84,7 +89,7 @@ class NaoSharedMemory:
 
     def get_current_goal_direction(self):
         return self.__current_goal_direction.value
-    
+
     def add_message(self, msg):
         self.__event_queue.put(msg)
 
@@ -93,5 +98,6 @@ class NaoSharedMemory:
 
     def messages_left(self):
         return self.__event_queue.qsize()
-    
-    
+
+    def redis(self, command, *args):
+        return getattr(self.__redis_conn, command)(*args)
