@@ -54,7 +54,7 @@ class TalkController:
         # disable talk on redis
         self.redis_conn.set("avoid_hearing", 1)
 
-    def talk(self, sentence):
+    def say(self, sentence):
         self.LOGGER.info("Going to speak out loud")
 
         # read the desired sentence from redis
@@ -79,5 +79,5 @@ if __name__ == "__main__":
         time.sleep(1)
 
         # read it out loud
-        talk_controller.talk(random.choice(possible_talks))
+        talk_controller.say(random.choice(possible_talks))
         time.sleep(1)

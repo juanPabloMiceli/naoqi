@@ -2,7 +2,7 @@ import qi
 from argparse import ArgumentParser, RawTextHelpFormatter
 import sys
 
-from workspace.naoqi_custom.nao_properties import NaoProperties
+from workspace.properties.nao_properties import NaoProperties
 
 
 class PosturesController:

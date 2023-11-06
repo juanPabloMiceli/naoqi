@@ -30,6 +30,4 @@ def angle(v):
     return np.arctan2(v[1], v[0])
 
 def angle_between_vectors(v1, v2):
-    v1 = normalize(v1)
-    v2 = normalize(v2)
-    return np.arccos(np.inner(v1, v2))
+    return np.arctan2(np.cross(v1, v2), np.inner(v1, v2))

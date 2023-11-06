@@ -10,7 +10,7 @@ import qi
 import sys
 import argparse
 
-from workspace.naoqi_custom.nao_properties import NaoProperties
+from workspace.properties.nao_properties import NaoProperties
 
 class AwarenessController:
     

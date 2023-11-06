@@ -11,7 +11,7 @@ from os.path import exists
 import numpy as np
 import cv2
 from workspace.utils.logger_factory import LoggerFactory
-from workspace.naoqi_custom.nao_properties import NaoProperties
+from workspace.properties.nao_properties import NaoProperties
 
 from workspace.naoqi_custom.proxy_factory import ProxyFactory
 
@@ -45,41 +45,30 @@ class ImageContainer:
         self.color_space = image_container_array[3]
         self.b_array = image_container_array[6]
 
-    def get_cv2_image(self):
-        image_array = map(ord, self.b_array)
-        cv2_image = np.array(image_array, dtype=np.uint8)
-        self.LOGGER.info("width: {}, height: {}".format(self.width, self.height))
-        cv2_image = cv2_image.reshape(960,1280,3)
-        return cv2_image
-
 
 class VideoController:
     '''
     Image size: 1280x960
-    Retrieved image format: BGR
+    Retrieved image format: Gray image
     '''  
     
     def __init__(self, ip, port):
         self.image_width = 1280
         self.image_height = 960
+        self.image_shape = (self.image_height, self.image_width)
         self.LOGGER = LoggerFactory.get_logger("VideoController")
         self.proxy = ProxyFactory.get_proxy("ALVideoDevice", ip, port)
-        self.video_id = self.proxy.subscribeCamera("My_Test_Video", 0, 3, 11, 1)
+        self.video_id = self.proxy.subscribeCamera("My_Test_Video", 0, 3, 0, 30)
         self.LOGGER.info("Generated new video id {}".format(self.video_id))
-        
 
-    def get_current_gray_pov(self):
-        image_container = ImageContainer(self.proxy.getImageRemote(self.video_id))
-        return cv2.cvtColor(image_container.get_cv2_image(), cv2.COLOR_BGR2GRAY)
+    def get_current_gray_image(self):
+        nao_image = self.__get_nao_image()
+        image_bytes = ImageContainer(nao_image).b_array
+        return np.frombuffer(image_bytes, dtype=np.uint8).reshape(self.image_shape)
 
-    def get_current_rgb_image(self):
-        image_container = ImageContainer(self.proxy.getImageRemote(self.video_id))
-        return cv2.cvtColor(image_container.get_cv2_image(), cv2.COLOR_BGR2RGB)  
+    def __get_nao_image(self):
+        return self.proxy.getImageRemote(self.video_id)
 
-    def get_current_bgr_image(self):
-        image_container = ImageContainer(self.proxy.getImageRemote(self.video_id))
-        return image_container.get_cv2_image()
-    
     def __del__(self):
         self.proxy.unsubscribe(self.video_id)
         self.LOGGER.info("Correctly unsuscribed!")

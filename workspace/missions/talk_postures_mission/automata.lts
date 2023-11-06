@@ -1,0 +1,38 @@
+const N = 2 // #postures - 1
+range P = 0..N
+
+set Posture = {stand, sit, lay}
+set Controllable = {Posture, start_talk}
+set A = {Controllable, petition[p:P], end_talk}
+
+NAO = (Posture -> NAO | start_talk -> NAO_TALKING),
+NAO_TALKING = (Posture -> NAO_TALKING | petition [p:P] -> end_talk -> NAO).
+
+
+property ALWAYS_ACT_ON_TALK = (petition [p:P]  -> POSTURE[p]),
+POSTURE[p:P] = (when(p==0) stand -> ALWAYS_ACT_ON_TALK
+|when(p==1) sit -> ALWAYS_ACT_ON_TALK
+|when(p==2) lay -> ALWAYS_ACT_ON_TALK).
+
+
+//fluent F_StartTalk = <start_talk, A\{start_talk}>
+//fluent F_FinishTalk = <end_talk, A\{end_talk}>
+//fluent F_Talking = <start_talk, end_talk>
+
+
+//assert AlwaysTalk = F_StartTalk
+//assert AlwaysFinish = [](start_talk -> <>F_FinishTalk) //[](start_talk -> <>!F_Talking)
+
+||A = (NAO || ALWAYS_ACT_ON_TALK).
+
+//controllers
+controller ||C = (NAO)~{G1}.
+checkCompatibility ||Comp = (NAO)~{G1}.
+
+//Goals
+controllerSpec G1 = {
+       safety = {ALWAYS_ACT_ON_TALK}
+       assumption = {}
+       liveness = {}
+       controllable = {Controllable}
+}

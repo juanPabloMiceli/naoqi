@@ -7,3 +7,6 @@ secret_cfg.py
 *.wav
 settings.json
 .vscode/*
+sync_with_nao.sh
+.vscode
+.venv
