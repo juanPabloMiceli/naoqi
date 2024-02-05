@@ -18,6 +18,7 @@ shared_memory = NaoSharedMemory()
 nao = NaoFactory.create(shared_memory)
 
 redis = Redis("127.0.0.1", 6379, 0)
+redis.set("command_type", "chat")
 
 # fail if no talking services are working
 # TODO

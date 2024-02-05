@@ -61,8 +61,8 @@ class AudioInputManager:
                         while self.speech_detected:
                             sleep(0.5)
                         print("Speech undetected")
-                        speech_tag = self.redis.get("speech_tag").decode("utf-8")
-                        speech_audio_filepath = f"{speech_tag}.wav"
+                        # speech_tag = self.redis.get("speech_tag").decode("utf-8")
+                        speech_audio_filepath = "nao_audio.wav"
 
                         self.recorder.stop_recording(
                             speech_audio_filepath

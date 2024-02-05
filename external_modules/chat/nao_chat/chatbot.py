@@ -10,7 +10,7 @@ from nao_chat.cfg import (
     OPENAI_MODEL,
     TEMPERATURE,
 )
-from nao_chat.conversation_pipe import ConversationPipe
+from workspace.redis.conversation_pipe import ConversationPipe
 from nao_chat.enums import AvailableChatbots, ChatRoles
 import sys
 
