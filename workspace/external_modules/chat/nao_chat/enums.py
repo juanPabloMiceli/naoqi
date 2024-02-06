@@ -28,3 +28,9 @@ class ArtPiece(Enum):
     the_kiss = "The Kiss"
     the_birth_of_venus = "The Birth of Venus"
     guernica = "Guernica"
+
+
+class Postures(Enum):
+    stand = "stand"
+    sit = "sit"
+    lay = "lay"

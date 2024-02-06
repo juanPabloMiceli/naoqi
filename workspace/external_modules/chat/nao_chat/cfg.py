@@ -1,4 +1,4 @@
-from nao_chat.enums import OpenAIModel
+from workspace.external_modules.chat.nao_chat.enums import OpenAIModel
 
 
 ROOT = "nao_chat"

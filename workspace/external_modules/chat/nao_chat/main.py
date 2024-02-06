@@ -1,4 +1,4 @@
-from nao_chat.chatbot import ChatBotManager
+from workspace.external_modules.chat.nao_chat.chatbot import ChatBotManager
 
 
 if __name__ == "__main__":

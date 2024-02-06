@@ -1,9 +1,10 @@
-from python_recording import Recorder, post_to_api
 from redis import Redis
 import sounddevice as sd
 from time import sleep
-from speech_detection import audio_callback, has_speech
-from nao_chat.nao_chat.conversation_pipe import ConversationPipe
+from workspace.external_modules.hearing.speech_detection import audio_callback
+from workspace.external_modules.hearing.python_recording import Recorder
+from workspace.external_modules.hearing.gpt import transcribe
+from workspace.redis.redis_manager import RedisManager
 
 
 AUDIO_PATH = "/app/audio_files"
@@ -13,8 +14,9 @@ class AudioInputManager:
     def __init__(self):
         self.recorder = Recorder()
         self.redis = Redis(host="nao-redis", port=6379, db=0)
-        self.convo_pipe = ConversationPipe()
-        self.redis.delete("speech_detected")
+        self.redis_manager = RedisManager()
+        self.redis_manager.clear_redis_keys()
+        # self.redis.delete("speech_detected")
 
     @property
     def speech_detected(self):
@@ -26,10 +28,9 @@ class AudioInputManager:
         """
 
         def stream_callback(indata, frames, time, status):
-            avoid_hearing = (
-                self.redis.get("avoid_hearing") == b"1"
-                or self.redis.get("talk_enabled") != b"1"
-            )
+            hearing_status = self.redis_manager.hearing_status()
+            talk_status = self.redis_manager.talk_status()
+            avoid_hearing = hearing_status is False or talk_status is False
             speech_detected_value = None
             if not avoid_hearing:
                 speech_detected_value = audio_callback(indata, frames, time, status)
@@ -69,48 +70,41 @@ class AudioInputManager:
                         )  # Stop audio recording
                         print("Recording Stopped")
 
-                        # if has_speech(f"{AUDIO_PATH}/{speech_audio_filepath}"):
-                        #    print("Audio file has actual speech")
-                        # send audio recording a retrieve response
-                        command_type = self.redis.get("command_type").decode("utf-8")
+                        # transcribe audio file
+                        transcription = transcribe(speech_audio_filepath)
 
-                        response = post_to_api(
-                            speech_audio_filepath,
-                            command_type,
-                        )
+                        # translate
+                        # translated_transcription = translate(transcription)
 
-                        if command_type == "chat":
-                            print("Passing user transcription to chatbot")
-                            # put the message on the conversation pipe
-                            self.convo_pipe.add_user_message(response)
-                            # wait for the system response to be available
-                            print("Waiting for chatbot response")
-                            print(self.convo_pipe.get_bot_message_availability())
-                            while not self.convo_pipe.get_bot_message_availability():
-                                print(self.convo_pipe.get_bot_message_availability())
-                                sleep(1)
+                        print("Passing user transcription to chatbot")
+                        # put the message on the conversation pipe
+                        self.redis_manager.store_user_message(transcription)
+                        # wait for the system response to be available
+                        print("Waiting for chatbot response")
+                        while not self.redis_manager.chat_response_available():
+                            sleep(1)
 
-                            print("Got chatbot response")
-                            response = self.convo_pipe.get_bot_message()
+                        print("Got chatbot response")
+                        response = self.redis_manager.consume_chat_response()
 
                         if response is not None:
                             # execute the talking mechanism
 
                             # prevent further hearing
-                            self.redis.set("avoid_hearing", 1)
+                            self.redis_manager.turn_off_hearing()
 
                             # pass the response onto the NAO via redis
                             # self.redis.set(f"gpt_response", response)
 
                             # execute the t2s of the NAO
-                            self.redis.set("NAO_response", response)
+                            self.redis_manager.store_nao_message(response)
 
-                            # wait for nao clearing
-                            while self.redis.get("NAO_response") is not None:
+                            # wait for nao message consumption
+                            while self.redis_manager.nao_message_available():
                                 sleep(0.5)
 
                             # re-allow hearing
-                            self.redis.set("avoid_hearing", 0)
+                            self.redis_manager.turn_on_hearing()
 
                     self.recorder.start_recording()
                 except Exception as e:

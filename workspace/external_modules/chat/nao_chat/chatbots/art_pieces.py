@@ -1,7 +1,11 @@
-from nao_chat.enums import AvailableChatbots, ChatRoles, ArtPiece
-from nao_chat.chatbot import ChatBot
-from nao_chat.cfg import PROMPT_STORE_PATH
-from nao_chat.helpers import read_text_file
+from workspace.external_modules.chat.nao_chat.enums import (
+    AvailableChatbots,
+    ChatRoles,
+    ArtPiece,
+)
+from workspace.external_modules.chat.nao_chat.chatbot import ChatBot
+from workspace.external_modules.chat.nao_chat.cfg import PROMPT_STORE_PATH
+from workspace.external_modules.chat.nao_chat.helpers import read_text_file
 
 
 prompt = read_text_file(f"{PROMPT_STORE_PATH}/art_pieces.txt")

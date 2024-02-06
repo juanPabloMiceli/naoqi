@@ -11,19 +11,19 @@ from workspace.missions.talk_postures_mission.postures_module import PosturesMod
 from workspace.robot.nao_shared_memory import NaoSharedMemory
 from workspace.utils.logger_factory import LoggerFactory
 from workspace.utils.nao_factory import NaoFactory
+from workspace.redis.redis_manager import RedisManager
 
 LOGGER = LoggerFactory.get_logger("main")
 
 shared_memory = NaoSharedMemory()
 nao = NaoFactory.create(shared_memory)
 
-redis = Redis("127.0.0.1", 6379, 0)
-redis.set("command_type", "chat")
+redis_manager = RedisManager(host="127.0.0.1")
 
 # fail if no talking services are working
 # TODO
 
-sensing_list = [UserRequestSensing(nao, redis)]
+sensing_list = [UserRequestSensing(nao, redis_manager)]
 module_list = [TalkModule(nao), PosturesModule(nao)]
 
 # Load and start automata

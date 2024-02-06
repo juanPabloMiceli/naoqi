@@ -8,6 +8,7 @@ from redis import Redis
 from workspace.utils.logger_factory import LoggerFactory
 from workspace.properties.nao_properties import NaoProperties
 from workspace.naoqi_custom.proxy_factory import ProxyFactory
+from workspace.redis.redis_manager import RedisManager
 
 
 def remove_non_ascii_letters(input_string, leave_dots_and_commas=False):
@@ -34,20 +35,19 @@ class TalkController:
 
         self.awareness = ProxyFactory.get_proxy("ALBasicAwareness", ip, port)
 
-        self.redis_conn = Redis("127.0.0.1", 6379, 0)
+        self.redis_manager = RedisManager()
 
-        thread = Thread(target=self.__poll_for_talk_usage)
+        thread = Thread(target=self.poll_for_nao_responses)
         thread.start()
 
-    def __poll_for_talk_usage(self):
+    def poll_for_nao_responses(self):
         while True:
-            talk_response = self.redis_conn.get("NAO_response")
-            while talk_response is None:
+            while self.redis_manager.nao_message_available() is False:
                 time.sleep(0.5)
-                talk_response = self.redis_conn.get("NAO_response")
+
+            talk_response = self.redis_manager.consume_nao_message()
 
             self.say(talk_response)
-            self.redis_conn.delete("NAO_response")
 
     def start_talk(self):
         # enable initiative tracking
@@ -57,7 +57,7 @@ class TalkController:
         self.awareness.setTrackingMode("BodyRotation")
 
         # enable talk on redis
-        self.redis_conn.set("talk_enabled", 1)
+        self.redis_manager.turn_on_hearing()
 
         # another way could be to start an AudioInputManager on another docker container
         # this could be done via a script that reads the enable or disable key on redis
@@ -65,7 +65,7 @@ class TalkController:
 
     def end_talk(self):
         # disable talk on redis
-        self.redis_conn.set("talk_enabled", 0)
+        self.redis_manager.turn_off_hearing()
 
     def say(self, sentence):
         self.LOGGER.info("Going to speak out loud")
