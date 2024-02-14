@@ -2,7 +2,7 @@
 name = "audio-transcription-api"
 version = "0.1.0"
 description = "A FastAPI application to transcribe audio and generate text with GPT-3"
-authors = ["tsujovolsky@gmail.com"]
+authors = ["Tomas Sujovolsky <tsujovolsky@gmail.com>"]
 license = "MIT"
 
 [tool.poetry.dependencies]

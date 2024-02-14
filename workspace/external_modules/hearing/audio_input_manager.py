@@ -7,7 +7,7 @@ from workspace.external_modules.hearing.gpt import transcribe
 from workspace.redis.redis_manager import RedisManager
 
 
-AUDIO_PATH = "/app/audio_files"
+AUDIO_PATH = "/app/workspace/external_modules/hearing/audio_files"
 
 
 class AudioInputManager:
@@ -48,6 +48,10 @@ class AudioInputManager:
             self.recorder.start_recording()  # Start audio recording
 
             while True:
+
+                self.redis_manager.turn_on_hearing()
+                self.redis_manager.turn_on_talk()
+
                 try:
                     sleep(interval)  # Wait for the specified interval
 

@@ -1,11 +1,13 @@
 # Use an official Python runtime as a parent image
 FROM python:3.8
 
+ENV PYTHONPATH "${PYTHONPATH}:/app/workspace"
+
 # Set the working directory in the container to /app
 WORKDIR /app
 
 # Add current directory code to /app in container
-ADD . /app
+ADD . /app/workspace/external_modules/hearing
 
 # install mic input dependencies
 RUN apt-get update && apt-get install -y portaudio19-dev

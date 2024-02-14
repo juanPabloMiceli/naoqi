@@ -31,7 +31,7 @@ class RedisManager:
 
         # initialize pipe functions
 
-        for pipe_identifier in RedisManager.SWITCHES:
+        for pipe_identifier in RedisManager.PIPES:
             setattr(
                 self,
                 self.store_pipe.__name__.replace("pipe", pipe_identifier),

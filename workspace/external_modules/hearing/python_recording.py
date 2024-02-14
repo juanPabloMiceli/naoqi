@@ -11,7 +11,7 @@ print("Recorder usage requires a mic selection")
 device_id = input("Select a device:")
 device_name = devices[int(device_id)]["name"]
 
-AUDIO_PATH = "/app/audio_files"
+AUDIO_PATH = "/app/workspace/external_modules/hearing/audio_files"
 
 
 class Recorder:

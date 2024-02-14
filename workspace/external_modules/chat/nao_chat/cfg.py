@@ -1,8 +1,8 @@
 from workspace.external_modules.chat.nao_chat.enums import OpenAIModel
 
 
-ROOT = "nao_chat"
-PROMPT_STORE_PATH = f"/{ROOT}/prompts"
+ROOT = "/app/workspace/external_modules/chat/nao_chat"
+PROMPT_STORE_PATH = f"{ROOT}/chatbots/prompts"
 MAX_TOKENS_PER_REQUEST = 100000
 TEMPERATURE = 0
 

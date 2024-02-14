@@ -2,18 +2,21 @@
 FROM python:3.9-slim-buster
 
 # Set the working directory in the container to /app
-WORKDIR /nao_chat
+WORKDIR /app
 
 # Add the current directory contents into the container at /app
 # ADD ../nao_chat /nao_chat
 
-ENV PYTHONPATH "${PYTHONPATH}:/nao_chat"
+ENV PYTHONPATH "${PYTHONPATH}:/app/workspace"
+
+# Add current directory code to /app in container
+ADD . /app/workspace/external_modules/chat
 
 # Install Poetry
 RUN pip install poetry
 
-# Copy the pyproject.toml file into the working directory
-COPY ./pyproject.toml /nao_chat/
+# Copy only requirements to cache them in docker layer
+COPY pyproject.toml pyproject.toml
 
 EXPOSE 7860
 

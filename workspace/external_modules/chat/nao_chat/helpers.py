@@ -59,9 +59,11 @@ def count_tokens_of_messages(messages: List[Dict[str, str]], model: str) -> int:
         )
 
     tokens_messages = [
-        len(encoding.encode(value))
-        if key != "name"
-        else len(encoding.encode(value)) + tokens_per_name
+        (
+            len(encoding.encode(value))
+            if key != "name"
+            else len(encoding.encode(value)) + tokens_per_name
+        )
         for message in messages
         for key, value in message.items()
     ]
@@ -78,9 +80,9 @@ def read_text_file(path: str) -> str:
     try:
         with open(path, mode="r") as file:
             content = file.read()
-    except FileNotFoundError:
-        logging.debug(f"{path} was not found")
-    return content
+            return content
+    except FileNotFoundError as error:
+        raise Exception(f"{path} was not found") from error
 
 
 def basic_date_parse(possible_date_str: str) -> Union[dt.date, None]:

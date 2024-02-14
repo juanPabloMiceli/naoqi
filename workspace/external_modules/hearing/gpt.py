@@ -16,7 +16,7 @@ redis_manager = RedisManager()
 
 
 def transcribe(audio_path: str) -> str:
-    full_path = "/app/audio_files/" + audio_path
+    full_path = "/app/workspace/external_modules/hearing/audio_files/" + audio_path
     try:
         audio_file = open(full_path, "rb")
         transcript = openai.Audio.translate(

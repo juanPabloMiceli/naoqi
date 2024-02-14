@@ -5,7 +5,7 @@ import scipy.io.wavfile as wavfile
 import redis
 import wave
 
-AUDIO_PATH = "/app/audio_files"
+AUDIO_PATH = "/app/workspace/external_modules/hearing/audio_files"
 
 # Redis configuration
 redis_host = "nao-redis"  # Replace with your Redis server host
