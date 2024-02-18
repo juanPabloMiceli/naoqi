@@ -10,7 +10,7 @@ WORKDIR /app
 ADD . /app/workspace/external_modules/hearing
 
 # install mic input dependencies
-RUN apt-get update && apt-get install -y portaudio19-dev
+RUN apt-get update && apt-get install -y pulseaudio portaudio19-dev
 
 # Install Poetry
 RUN pip install poetry

@@ -7,6 +7,8 @@ devices = sd.query_devices()
 for i, device in enumerate(devices):
     print(f"Device #{i}: {device['name']}")
 
+print(devices)
+
 print("Recorder usage requires a mic selection")
 device_id = input("Select a device:")
 device_name = devices[int(device_id)]["name"]
