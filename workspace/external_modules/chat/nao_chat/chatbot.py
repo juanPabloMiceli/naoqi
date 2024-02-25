@@ -12,6 +12,11 @@ from workspace.redis.redis_manager import RedisManager
 from workspace.external_modules.chat.nao_chat.enums import AvailableChatbots, ChatRoles
 import sys
 
+import openai
+import workspace.external_modules.secret_cfg as scfg
+openai.api_key = scfg.API_KEY
+
+
 
 class CommandHandler:
     def __init__(
@@ -262,13 +267,13 @@ class ChatBotManager:
 
     def add_message_to_chatbox(self, message: str):
         print("--- CBM: admtc ---")
-        print(message)
         self.audio_manager.store_chat_response(message)
 
     def start_chat(self, mode: str):
         print("--- CBM: start chat ---")
         self.currently_chatting = True
         self.mode = mode
+        self.audio_manager.clear_redis_keys()
 
         try:
             self.current_chatbot = self.chatbots["SMALL_TALK"]
@@ -291,7 +296,7 @@ class ChatBotManager:
             chatbot_total_usage = sum(chatbot_total_usages)
             tokens_usage += chatbot_total_usage
 
-        approx_usage_in_usd = tokens_usage / 1000 * 0.002
+        approx_usage_in_usd = tokens_usage / 1000 * 0.00005
 
         usage_text = f"Conversation: token usage: {tokens_usage}, approx usd value: {approx_usage_in_usd}$"
 

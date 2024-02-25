@@ -3,8 +3,9 @@ import sounddevice as sd
 from time import sleep
 from workspace.external_modules.hearing.speech_detection import audio_callback
 from workspace.external_modules.hearing.python_recording import Recorder
-from workspace.external_modules.hearing.gpt import transcribe
+from workspace.external_modules.hearing.helpers import transcribe, translate
 from workspace.redis.redis_manager import RedisManager
+import inspect
 
 
 AUDIO_PATH = "/app/workspace/external_modules/hearing/audio_files"
@@ -78,11 +79,11 @@ class AudioInputManager:
                         transcription = transcribe(speech_audio_filepath)
 
                         # translate
-                        # translated_transcription = translate(transcription)
+                        translated_transcription = translate(transcription)
 
                         print("Passing user transcription to chatbot")
                         # put the message on the conversation pipe
-                        self.redis_manager.store_user_message(transcription)
+                        self.redis_manager.store_user_message(translated_transcription)
                         # wait for the system response to be available
                         print("Waiting for chatbot response")
                         while not self.redis_manager.chat_response_available():
@@ -114,7 +115,6 @@ class AudioInputManager:
                 except Exception as e:
                     print(e)
                     self.recorder.stop_recording("noise.wav")
-
 
 if __name__ == "__main__":
     aim = AudioInputManager()

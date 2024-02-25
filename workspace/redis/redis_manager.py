@@ -1,4 +1,5 @@
 import redis
+from functools import partial
 
 
 class RedisManager:
@@ -16,17 +17,17 @@ class RedisManager:
             setattr(
                 self,
                 self.turn_on_switch.__name__.replace("switch", switch_identifier),
-                lambda: self.turn_on_switch(switch_identifier),
+                partial(self.turn_on_switch, switch_identifier),
             )
             setattr(
                 self,
                 self.turn_off_switch.__name__.replace("switch", switch_identifier),
-                lambda: self.turn_off_switch(switch_identifier),
+                partial(self.turn_off_switch, switch_identifier),
             )
             setattr(
                 self,
                 self.switch_status.__name__.replace("switch", switch_identifier),
-                lambda: self.switch_status(switch_identifier),
+                partial(self.switch_status, switch_identifier),
             )
 
         # initialize pipe functions
@@ -35,17 +36,17 @@ class RedisManager:
             setattr(
                 self,
                 self.store_pipe.__name__.replace("pipe", pipe_identifier),
-                lambda x: self.store_pipe(pipe_identifier, x),
+                partial(self.store_pipe, pipe_identifier),
             )
             setattr(
                 self,
                 self.consume_pipe.__name__.replace("pipe", pipe_identifier),
-                lambda: self.consume_pipe(pipe_identifier),
+                partial(self.consume_pipe, pipe_identifier),
             )
             setattr(
                 self,
                 self.pipe_available.__name__.replace("pipe", pipe_identifier),
-                lambda: self.pipe_available(pipe_identifier),
+                partial(self.pipe_available, pipe_identifier),
             )
 
     def _add_prefix(self, key):
@@ -62,12 +63,14 @@ class RedisManager:
 
     def store_pipe(self, pipe_identifier, message):
         self.redis_conn.set(self._add_prefix(pipe_identifier), message)
+        print("Stored {} in {}".format(message, self._add_prefix(pipe_identifier)))
 
     def consume_pipe(self, pipe_identifier):
         user_message = self.redis_conn.get(self._add_prefix(pipe_identifier))
         if user_message:
             user_message = user_message.decode("utf-8")
             self.redis_conn.delete(self._add_prefix(pipe_identifier))
+        print("Got {} from {}".format(user_message, self._add_prefix(pipe_identifier)))
         return user_message
 
     def pipe_available(self, pipe_identifier):

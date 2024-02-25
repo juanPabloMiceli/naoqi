@@ -7,7 +7,6 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" >/dev/null 2>&1 && pwd)"
 cd $SCRIPT_DIR
 cd ../..
 CURRENT_DIR=$(pwd)
-pwd
 
 sudo docker network create nao-net
 sudo docker run --rm --network=nao-net --name nao-redis -p 6379:6379 -d redis

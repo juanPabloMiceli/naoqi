@@ -1,16 +1,19 @@
 import sounddevice as sd
 import numpy as np
 from scipy.io.wavfile import write
+from workspace.external_modules.hearing.helpers import input_with_timeout
 
 
 devices = sd.query_devices()
-for i, device in enumerate(devices):
-    print(f"Device #{i}: {device['name']}")
+# for i, device in enumerate(devices):
+#     print(f"Device #{i}: {device['name']}")
 
 print(devices)
+DEFAULT_DEVICE = 1
 
 print("Recorder usage requires a mic selection")
-device_id = input("Select a device:")
+device_id = input_with_timeout(f"Enter a device (default is #{DEFAULT_DEVICE}): ", 5, DEFAULT_DEVICE)
+print(f"selected device #{device_id}")
 device_name = devices[int(device_id)]["name"]
 
 AUDIO_PATH = "/app/workspace/external_modules/hearing/audio_files"

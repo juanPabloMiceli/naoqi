@@ -16,9 +16,10 @@ class AvailableChatbots(Enum):
 
 class OpenAIModel(Enum):
     gpt4 = "gpt-4"
-    gpt3 = "gpt-3.5-turbo"
+    gpt3 = "gpt-3.5-turbo-0125"
     gpt3_fb = "gpt-3.5-turbo-0613"
     gpt3_16k = "gpt-3.5-turbo-16k"
+
 
 
 class ArtPiece(Enum):
