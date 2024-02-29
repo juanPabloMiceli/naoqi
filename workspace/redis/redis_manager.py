@@ -50,7 +50,7 @@ class RedisManager:
             )
 
     def _add_prefix(self, key):
-        return f"nao_chat:{key}"
+        return "nao_chat:{}".format(key)
 
     def turn_on_switch(self, switch_identifier):
         self.redis_conn.set(self._add_prefix(switch_identifier), 1)
@@ -83,5 +83,5 @@ class RedisManager:
         self.redis_conn.delete(*keys_to_clear)
 
     # coding declarations
-    # this declarionts will be rewritten when initializing.
-    # these are here to help the coding proccess run smoothly with coding editors
+    # this declarations will be rewritten when initializing.
+    # these are here to help the coding process run smoothly with coding editors
