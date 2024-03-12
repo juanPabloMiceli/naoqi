@@ -10,3 +10,6 @@ settings.json
 sync_with_nao.sh
 .vscode
 .venv
+
+# WSL
+*.Identifier

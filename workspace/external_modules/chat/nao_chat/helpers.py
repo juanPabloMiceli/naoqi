@@ -77,6 +77,9 @@ def log_usage(usage: Dict[int, float]):
 
 
 def read_text_file(path: str) -> str:
+    """Load the text in the given path.
+    Used to load prompts.
+    """
     try:
         with open(path, mode="r") as file:
             content = file.read()

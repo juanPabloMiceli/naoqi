@@ -119,6 +119,7 @@ class ChatBot:
         self.conversation.append(message_dict)
 
     def run_conversation(self, retries: int = 2):
+        """Create the next bot message using the preexisting chat history"""
         print(f"--- {self.name}: run conversation")
         # if retries < 2:
         #     sleep(2)
@@ -191,6 +192,8 @@ class ChatBot:
 
 
 class ChatBotManager:
+    """Class in charge of coordinating the chatbots and creating a consistent user experience."""
+
     chatbots: Dict[str, ChatBot] = {}
 
     def __init__(self) -> None:
@@ -216,6 +219,7 @@ class ChatBotManager:
         self.max_retries_per_request = 5
 
     def redirect(self, bot: str):
+        """Change the current chatbot in charge of processing incoming messages"""
         # set the new current chatbot
         self.current_chatbot = self.chatbots[bot]
 
@@ -232,6 +236,7 @@ class ChatBotManager:
     def add_message(
         self, text: str, sender: Union[ChatRoles, AvailableChatbots], show: bool = True
     ):
+        """Add a message to the conversation history. Can also show the message to the user."""
         print("--- CBM: add_message ---")
         # create the message
         message = {"content": text, "role": sender.value}
@@ -244,6 +249,8 @@ class ChatBotManager:
             self.add_message_to_chatbox(text)
 
     def wait_for_input(self):
+        """Lock the chatbot until an user message is available.
+        After receiving the message process it."""
         print("--- CBM: wait for input ---")
         if self.mode == "nao":
             # wait until the message is set to
@@ -266,13 +273,18 @@ class ChatBotManager:
         self.current_chatbot.run_conversation()
 
     def add_message_to_chatbox(self, message: str):
+        """Display the given message as a chatbot message.
+        This are the messages shown to the user."""
         print("--- CBM: admtc ---")
         self.audio_manager.store_chat_response(message)
 
     def start_chat(self, mode: str):
+        """start the chat in the given mode"""
         print("--- CBM: start chat ---")
         self.currently_chatting = True
         self.mode = mode
+
+        # reset redis keys from previous conversations
         self.audio_manager.clear_redis_keys()
 
         try:
@@ -286,6 +298,7 @@ class ChatBotManager:
             self.finish_chat()
 
     def finish_chat(self):
+        """End the chat and log the total usage"""
         print("--- CBM: finish chat ---")
         # calculate the total token usage for the conversation
         tokens_usage = 0
