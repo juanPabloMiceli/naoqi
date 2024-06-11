@@ -1,5 +1,6 @@
 import sys
 import qi
+from workspace.naoqi_custom.red_ball_detection_module import RedBallDetectionModule
 from workspace.location.qr_detector import QrDetector
 from workspace.properties.nao_properties import NaoProperties
 from workspace.naoqi_custom.leds_controller import LedsController
@@ -9,18 +10,27 @@ from workspace.naoqi_custom.head_controller import HeadController
 from workspace.naoqi_custom.motion_controller import MotionController
 from workspace.location.locator_and_mapper import LocatorAndMapper
 from workspace.utils.qr_decoder import QrDecoder
+from workspace.naoqi_custom.proxy_factory import ProxyFactory
+from naoqi import ALBroker
+import time
+
 
 class Nao:
-    def __init__(self, shared_memory):
+    def __init__(self, shared_memory, _map):
         self.shared_memory = shared_memory
         self.ip, self.port = NaoProperties().get_connection_properties()
         self.session = self.__start_session()
+        self.broker = ALBroker('broker', '0.0.0.0', 0, self.ip, self.port)
+        self.nao_memory = self.session.service('ALMemory')
         self.leds_controller = LedsController(self.ip, self.port)
         self.awareness_controller = AwarenessController(self.session)
+        self.awareness_controller.set(False)
         self.video_controller = VideoController(self.ip, self.port)
         self.head_controller = HeadController(self.session)
-        self.movement_controller = MotionController(self.ip, self.port, None)
-        self.position_updater = LocatorAndMapper(shared_memory, self)
+        self.movement_controller = MotionController(self.ip, self.port)
+        self.position_updater = LocatorAndMapper(shared_memory, self, _map)
+
+        self.last_ball_detected = time.time()
 
 
     def __start_session(self):
@@ -77,3 +87,13 @@ class Nao:
 
     def get_qrs_in_vision(self):
         return QrDetector.get_qrs_information(self.get_frame())
+
+    def ball_detected(self, distance, horizontal_angle_degrees, vertical_angle_degrees):
+        self.last_ball_detected = time.time()
+        self.shared_memory.set_new_ball(distance, horizontal_angle_degrees, vertical_angle_degrees)
+
+    def get_ball_info(self):
+        now = time.time()
+        if now - self.last_ball_detected > 0.1:
+            return None
+        return self.shared_memory.get_ball_info()

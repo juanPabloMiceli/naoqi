@@ -29,9 +29,9 @@ class HeadController:
         return self.__min_max(angle, self.max_down, self.max_up)
 
 
-    def look_at(self, angle_x, angle_y):
+    def look_at_relative(self, angle_x, angle_y):
         '''
-            Receives angle_x and angle_y in degrees and rotates nao's head.
+            Receives angle_x and angle_y in degrees and rotates nao's head the given angles.
 
             Range:
 
@@ -39,14 +39,32 @@ class HeadController:
 
             -29.5 (full down) <= angle_y <= 38.5 (full up)
 
-            This is a blocking function!
+            This is a non-blocking function!
         '''
         self.service.setStiffnesses("Head", 1.0)
         joint_names = ["HeadYaw", "HeadPitch"]
         joint_angles = [math.radians(-self.__correct_x_angle(angle_x)), math.radians(-self.__correct_y_angle(angle_y))]
-        speed = 0.25
-        self.service.angleInterpolationWithSpeed(joint_names,joint_angles, speed)
-        self.service.angleInterpolationWithSpeed(joint_names,joint_angles, speed)
+        speed = 0.3
+        self.service.setAngles(joint_names,joint_angles, speed)
+        return True
+
+    def look_at(self, angle_x, angle_y):
+        '''
+            Receives angle_x and angle_y in degrees and rotates nao's head to the given absolute values.
+
+            Range:
+
+            -119.5 (full left) <= angle_x <= 119.5 (full right)
+
+            -29.5 (full down) <= angle_y <= 38.5 (full up)
+
+            This is a non-blocking function!
+        '''
+        self.service.setStiffnesses("Head", 1.0)
+        joint_names = ["HeadYaw", "HeadPitch"]
+        joint_angles = [math.radians(-self.__correct_x_angle(angle_x)), math.radians(-self.__correct_y_angle(angle_y))]
+        speed = 0.3
+        self.service.setAngles(joint_names,joint_angles, speed)
         return True
 
     def look_front(self):

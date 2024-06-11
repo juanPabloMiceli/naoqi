@@ -5,10 +5,14 @@ import workspace.cli.parsers.start_camera_parser as start_camera_parser
 import workspace.cli.parsers.look_at_parser as look_at_parser
 import workspace.cli.parsers.move_parser as move_parser
 import workspace.cli.parsers.advanced_movement_parser as advanced_movement_parser
+import workspace.cli.parsers.tts_parser as tts_parser
 import argparse
 
+from workspace.naoqi_custom.red_ball_detection_module import RedBallDetectionModule
 from workspace.robot.nao_shared_memory import NaoSharedMemory
 from workspace.utils.nao_factory import NaoFactory
+from workspace.properties.nao_properties import NaoProperties
+
 
 def add_subparsers(subparsers):
     subparsers = parser.add_subparsers(title='Available capabilities')
@@ -20,6 +24,7 @@ def add_subparsers(subparsers):
     look_at_parser.add_parser(subparsers)
     move_parser.add_parser(subparsers)
     advanced_movement_parser.add_parser(subparsers)
+    tts_parser.add_parser(subparsers)
 
 
 if __name__ == '__main__':
@@ -28,6 +33,10 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     if hasattr(args, 'func'):
-        args.func(args, NaoFactory.create(NaoSharedMemory()))
+        nao, simulation = NaoFactory.create(NaoSharedMemory())
+        if not simulation:
+            redBallModule = RedBallDetectionModule('redBallModule', nao)
+            nao.nao_memory.subscribeToEvent('redBallDetected', 'redBallModule', 'red_ball_detected')
+        args.func(args, nao)
     else:
         parser.print_help()

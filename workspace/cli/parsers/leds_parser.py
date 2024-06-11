@@ -1,16 +1,17 @@
+from workspace.naoqi_custom.leds_controller import LedsController
 import time
 
 def turn_leds_on(args, nao):
-    nao.head_leds_on()
+    nao.leds_controller.on()
 
 def turn_leds_off(args, nao):
-    nao.head_leds_off()
+    nao.leds_controller.off()
 
 def blink_leds(args, nao):
     while True:
-        nao.head_leds_on()
+        nao.leds_controller.on()
         time.sleep(1)
-        nao.head_leds_off()
+        nao.leds_controller.off()
         time.sleep(1)
 
 def add_parser(subparser):
