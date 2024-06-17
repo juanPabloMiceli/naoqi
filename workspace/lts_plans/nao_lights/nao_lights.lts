@@ -1,0 +1,31 @@
+/* Mision del nao sencilla
+    Esta mision solo tiene 2 controlables: luces_cabeza_on y luces_cabeza_off.
+    El unico objetivo es que el nao titile la luz que tiene en la cabeza en algun intervalo de tiempo.
+	Para empezar con algo bien facil, lo primero que vamos a intentar es que el nao prenda y apague la luz de la cabeza de forma intercalada.
+*/
+
+LucesCabeza = LucesApagadas,
+LucesApagadas = (luces_cabeza_on -> WaitLucesPrendidasStart),
+WaitLucesPrendidasStart = (start_wait -> WaitLucesPrendidasEnd),
+WaitLucesPrendidasEnd = (end_wait -> LucesPrendidas),
+LucesPrendidas = (luces_cabeza_off -> WaitLucesApagadasStart),
+WaitLucesApagadasStart = (start_wait -> WaitLucesApagadasEnd),
+WaitLucesApagadasEnd = (end_wait -> LucesApagadas).
+
+
+||Nao = (LucesCabeza).
+set Controlables = {luces_cabeza_off, luces_cabeza_on, start_wait}
+
+
+
+fluent LuzPrendida = <luces_cabeza_on, luces_cabeza_off> initially 0
+fluent LuzApagada = <luces_cabeza_off, luces_cabeza_on> initially 1
+
+controllerSpec ControlSpec = {
+	safety = {}
+	assumption = {}
+	liveness = {LuzPrendida, LuzApagada}
+	controllable = {Controlables}
+}
+controller ||Controller = (Nao)~{ControlSpec}.
+minimal ||UPDATE_CONTROLLER = (Nao || Controller).

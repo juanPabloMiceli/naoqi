@@ -1,0 +1,12 @@
+Process:
+	Controller
+States:
+	6
+Transitions:
+	Controller = Q0,
+	Q0	= (luces_cabeza_on -> Q3),
+	Q1	= (end_wait -> Q0),
+	Q2	= (end_wait -> Q5),
+	Q3	= (start_wait -> Q2),
+	Q4	= (start_wait -> Q1),
+	Q5	= (luces_cabeza_off -> Q4).
