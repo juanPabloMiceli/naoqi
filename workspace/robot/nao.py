@@ -18,11 +18,16 @@ class Nao:
         self.session = self.__start_session()
         self.leds_controller = LedsController(self.ip, self.port)
         self.awareness_controller = AwarenessController(self.session)
+        self.awareness_controller.set(False)
+        self.broker = ALBroker('broker', '0.0.0.0', 0, self.ip, self.port)
+        self.nao_memory = self.session.service('ALMemory')
         self.video_controller = VideoController(self.ip, self.port)
         self.head_controller = HeadController(self.session)
         self.movement_controller = MotionController(self.ip, self.port, None)
         self.position_updater = LocatorAndMapper(shared_memory, self)
         self.tts = ProxyFactory.get_proxy("ALTextToSpeech", self.ip, self.port)
+
+        self.last_ball_detected = time.time() - NaoProperties.seen_ball_time_of_grace()
 
 
     def __start_session(self):
@@ -82,3 +87,25 @@ class Nao:
 
     def say(self, text):
         self.tts.say(text)
+
+    def ball_detected(self, distance, horizontal_angle_degrees, vertical_angle_degrees):
+        self.last_ball_detected = time.time()
+        self.shared_memory.set_new_ball(distance, horizontal_angle_degrees, vertical_angle_degrees)
+
+    def get_ball_info(self):
+        now = time.time()
+        if self.__ball_is_in_vision():
+            return self.shared_memory.get_latest_ball_info()
+        return None
+
+    def __ball_is_in_vision(self):
+        return (time.time() - self.last_ball_detected) < NaoProperties.seen_ball_time_of_grace()
+
+    def debug_red_ball_detection(self):
+        while True:
+            detected_ball_info = self.get_ball_info()
+            if detected_ball_info is not None:
+                distance, horizontal_angle, vertical_angle = detected_ball_info
+                horizontal_side = "right" if horizontal_angle > 0 else "left"
+                vertical_side = "up" if vertical_angle > 0 else "down"
+                print("Ball detected: {}cm away, {}º {} and {}º {}".format(distance, horizontal_angle, horizontal_side, vertical_angle, vertical_side))
