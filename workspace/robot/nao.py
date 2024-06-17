@@ -2,6 +2,7 @@ import sys
 import qi
 from workspace.location.qr_detector import QrDetector
 from workspace.properties.nao_properties import NaoProperties
+from workspace.naoqi_custom.proxy_factory import ProxyFactory
 from workspace.naoqi_custom.leds_controller import LedsController
 from workspace.naoqi_custom.awareness_controller import AwarenessController
 from workspace.naoqi_custom.video_controller import VideoController
@@ -21,6 +22,7 @@ class Nao:
         self.head_controller = HeadController(self.session)
         self.movement_controller = MotionController(self.ip, self.port, None)
         self.position_updater = LocatorAndMapper(shared_memory, self)
+        self.tts = ProxyFactory.get_proxy("ALTextToSpeech", self.ip, self.port)
 
 
     def __start_session(self):
@@ -77,3 +79,6 @@ class Nao:
 
     def get_qrs_in_vision(self):
         return QrDetector.get_qrs_information(self.get_frame())
+
+    def say(self, text):
+        self.tts.say(text)

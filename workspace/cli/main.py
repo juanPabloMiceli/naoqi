@@ -5,6 +5,7 @@ import workspace.cli.parsers.start_camera_parser as start_camera_parser
 import workspace.cli.parsers.look_at_parser as look_at_parser
 import workspace.cli.parsers.move_parser as move_parser
 import workspace.cli.parsers.advanced_movement_parser as advanced_movement_parser
+import workspace.cli.parsers.tts_parser as tts_parser
 import argparse
 
 from workspace.robot.nao_shared_memory import NaoSharedMemory
@@ -20,6 +21,7 @@ def add_subparsers(subparsers):
     look_at_parser.add_parser(subparsers)
     move_parser.add_parser(subparsers)
     advanced_movement_parser.add_parser(subparsers)
+    tts_parser.add_parser(subparsers)
 
 
 if __name__ == '__main__':
@@ -28,6 +30,7 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     if hasattr(args, 'func'):
-        args.func(args, NaoFactory.create(NaoSharedMemory()))
+        nao, _ = NaoFactory.create(NaoSharedMemory())
+        args.func(args, nao)
     else:
         parser.print_help()

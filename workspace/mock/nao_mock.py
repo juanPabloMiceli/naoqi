@@ -134,3 +134,5 @@ class NaoMock:
         while True:
             self.get_qrs_in_vision()
 
+    def say(self, text):
+        self.LOGGER.info("Nao says: \"{}\"".format(text))
