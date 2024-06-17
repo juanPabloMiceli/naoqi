@@ -1,0 +1,42 @@
+/*
+Ejemplo de un plan sencillo hecho con LTS.
+
+Vamos implementar un controlador de las luces de un auto. En particular solo vamos a tener 3
+acciones controlables: apagar, prender_derecha y prender_izquierda.
+
+El objetivo del controlador es que las luces del auto titilen, es decir, debemos prender las luz izquierda, luego apagarla y prender la luz derecha. Nunca debemos prender ambas luces a la vez y
+debemos asegurar que ninguna de las luces va a quedar apagadas por siempre.
+*/
+
+// Automata de las luces del auto, este determina como podemos controlar las luces
+Luces = AmbasApagadas,
+AmbasApagadas = (prender_derecha -> DerechaPrendida | prender_izquierda -> IzquierdaPrendida),
+DerechaPrendida = (apagar -> AmbasApagadas | prender_izquierda -> AmbasPrendidas),
+IzquierdaPrendida = (apagar -> AmbasApagadas | prender_derecha -> AmbasPrendidas),
+AmbasPrendidas = (apagar -> AmbasApagadas).
+
+// Con que automatas definimos el auto, aca solo lo hacemos con las luces.
+||Auto = (Luces).
+
+// Definimos los controlables que vamos a tener
+set Controlables = {apagar, prender_derecha, prender_izquierda}
+
+
+// Definimos fluents auxiliares con la siguiente sintaxis: <como_se_prender, como_se_apaga> initially estado_inicial
+fluent PrendeDerecha = <prender_derecha, apagar> initially 0
+fluent PrendeIzquierda = <prender_izquierda, apagar> initially 0 
+
+// Definimos una propiedad de safety, es decir, algo que no queremos que pase nunca
+ltl_property NuncaAmbas = []!(PrendeDerecha && PrendeIzquierda)
+
+
+// Las especificaciones de nuestro controlador
+controllerSpec ControlSpec = {
+		safety = {NuncaAmbas}
+        assumption = {}
+        liveness = {PrendeDerecha, PrendeIzquierda}
+        controllable = {Controlables}
+}
+
+controller ||Controller = (Auto)~{ControlSpec}.
+minimal ||UPDATE_CONTROLLER = (Auto || Controller).
