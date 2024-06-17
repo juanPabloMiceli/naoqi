@@ -3,18 +3,55 @@ from multiprocessing import Value, Queue
 
 class NaoSharedMemory:
     def __init__(self):
-        self.__brain_leds = Value('b', False)
+        # Location
         self.__x_position = Value('f', 0.0)
         self.__y_position = Value('f', 0.0)
         self.__direction = Value('f', 0.0)
+        self.__nao_is_lost = Value('b', True)
+
+        # Messages
+        self.__event_queue = Queue()
+
+        # Red ball detection
+        self.__red_ball_detected = Value('b', False)
+        self.__distance_to_red_ball = Value('f', 0.0)
+        self.__horizontal_degrees_to_red_ball = Value('f', 0.0)
+        self.__vertical_degrees_to_red_ball = Value('f', 0.0)
+
+        # Simulation only
         self.__x_position_simulation = Value('f', 150.0)
         self.__y_position_simulation = Value('f', 150.0)
         self.__direction_simulation = Value('f', 45.0)
-        self.__nao_is_lost = Value('b', True)
+
+        # Miscelaneus
+        self.__brain_leds = Value('b', False)
         self.__current_goal_x = Value('f', -1000000.0)
         self.__current_goal_y = Value('f', -1000000.0)
         self.__current_goal_direction = Value('f', 0.0)
-        self.__event_queue = Queue()
+
+    def set_new_ball(self, new_distance, new_horizontal_angle_degrees, new_vertical_angle_degrees):
+        with self.__red_ball_detected.get_lock():
+            self.__red_ball_detected.value = True
+
+        with self.__distance_to_red_ball.get_lock():
+            self.__distance_to_red_ball.value = new_distance
+
+        with self.__horizontal__degrees_to_red_ball.get_lock():
+            self.__horizontal__degrees_to_red_ball.value = new_horizontal_angle_degrees
+
+        with self.__vertical__degrees_to_red_ball.get_lock():
+            self.__vertical__degrees_to_red_ball.value = new_vertical_angle_degrees
+
+    def get_ball_info(self):
+        if not self.__red_ball_detected.value:
+            return None
+        return (self.__distance_to_red_ball.value,
+                self.__horizontal__degrees_to_red_ball.value,
+                self.__vertical__degrees_to_red_ball.value)
+
+    def get_brain_leds(self):
+        return self.__brain_leds.value
+
     
     def set_brain_leds(self, new_value):
         with self.__brain_leds.get_lock():
@@ -93,5 +130,3 @@ class NaoSharedMemory:
 
     def messages_left(self):
         return self.__event_queue.qsize()
-    
-    
