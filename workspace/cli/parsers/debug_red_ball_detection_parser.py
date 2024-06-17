@@ -1,5 +1,3 @@
-import numpy as np
-
 def debug_balls_detection(args, nao):
     nao.debug_red_ball_detection()
 
