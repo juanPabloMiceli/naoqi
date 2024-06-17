@@ -65,6 +65,10 @@ class NaoSimulation(Thread):
         for qr in self._map.qrs:
             qr_position = qr.position + self.map_offset
             pygame.draw.circle(self.screen, PURPLE, qr_position, 3)
+
+        for ball in self._map.balls:
+            ball_position = ball.position + self.map_offset
+            pygame.draw.circle(self.screen, RED, ball_position, 5)
     
     def __draw_real_nao(self):
         nao_color = self.__get_nao_color()
