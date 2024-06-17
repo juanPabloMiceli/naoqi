@@ -3,18 +3,34 @@ from multiprocessing import Value, Queue
 
 class NaoSharedMemory:
     def __init__(self):
-        self.__brain_leds = Value('b', False)
+
+        # Location
         self.__x_position = Value('f', 0.0)
         self.__y_position = Value('f', 0.0)
         self.__direction = Value('f', 0.0)
+        self.__nao_is_lost = Value('b', True)
+
+        # Messages
+        self.__event_queue = Queue()
+
+        # Simulation Only
         self.__x_position_simulation = Value('f', 150.0)
         self.__y_position_simulation = Value('f', 150.0)
         self.__direction_simulation = Value('f', 45.0)
-        self.__nao_is_lost = Value('b', True)
+
+        # Red Ball Detection
+        self.__distance_to_red_ball = Value('f', 0.0)
+        self.__horizontal_degrees_to_red_ball = Value('f', 0.0)
+        self.__vertical_degrees_to_red_ball = Value('f', 0.0)
+
+        # Movement goals
         self.__current_goal_x = Value('f', -1000000.0)
         self.__current_goal_y = Value('f', -1000000.0)
         self.__current_goal_direction = Value('f', 0.0)
-        self.__event_queue = Queue()
+
+        # Actuators
+        self.__brain_leds = Value('b', False)
+
     
     def set_brain_leds(self, new_value):
         with self.__brain_leds.get_lock():
@@ -94,4 +110,17 @@ class NaoSharedMemory:
     def messages_left(self):
         return self.__event_queue.qsize()
     
-    
+    def set_new_ball(self, new_distance, new_horizontal_angle_degrees, new_vertical_angle_degrees):
+        with self.__distance_to_red_ball.get_lock():
+            self.__distance_to_red_ball.value = new_distance
+
+        with self.__horizontal_degrees_to_red_ball.get_lock():
+            self.__horizontal_degrees_to_red_ball.value = new_horizontal_angle_degrees
+
+        with self.__vertical_degrees_to_red_ball.get_lock():
+            self.__vertical_degrees_to_red_ball.value = new_vertical_angle_degrees
+
+    def get_latest_ball_info(self):
+        return (self.__distance_to_red_ball.value,
+                self.__horizontal_degrees_to_red_ball.value,
+                self.__vertical_degrees_to_red_ball.value)
