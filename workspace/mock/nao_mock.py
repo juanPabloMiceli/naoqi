@@ -146,7 +146,7 @@ class NaoMock:
                 ball_info = (distance, angle)
 
         end = time.time()
-        sleep_time = max(0, (1 / NaoProperties.nao_fps()) - (end - start))
+        sleep_time = max(0, (1 / 20) - (end - start))
         time.sleep(sleep_time)
 
         return ball_info
