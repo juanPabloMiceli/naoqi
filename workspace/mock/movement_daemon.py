@@ -19,7 +19,7 @@ class MovementDaemon(Thread):
             start = time.time()
             current_direction = self.shared_memory.get_direction_simulation()
             current_position = self.shared_memory.get_position_simulation()
-            self.shared_memory.set_direction_simulation(current_direction + (1 * self.x_speed) + self.direction_speed)
+            self.shared_memory.set_direction_simulation(current_direction + self.direction_speed)
             
             walk_vector = rotate([self.x_speed, self.y_speed], math.radians(current_direction))
             self.shared_memory.set_position_simulation(walk_vector + current_position)
