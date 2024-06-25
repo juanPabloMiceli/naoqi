@@ -10,5 +10,5 @@ class WaitModule():
         Thread(target=self.wait).start()
 
     def wait(self):
-        time.sleep(5)
+        time.sleep(1)
         self.nao.shared_memory.add_message("end_wait")

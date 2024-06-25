@@ -17,7 +17,7 @@ module_list = [WaitModule(nao), LedsModule(nao)]
 
 # Load and start automata
 automata = Automata(module_list, shared_memory, verbose=True)
-automata.load_automata_from_file("workspace/lts_plans/nao_lights/nao_lights.automata")
+automata.load_automata_from_file("workspace/lts_plans/nao_lights/automata.fsp")
 automata.start()
 
 dt_seconds = 0.1
