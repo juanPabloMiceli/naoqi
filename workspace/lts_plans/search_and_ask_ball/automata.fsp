@@ -1,0 +1,16 @@
+Process:
+	Controller
+States:
+	8
+Transitions:
+	Controller = Q0,
+	Q0	= (perfilar -> Q1),
+	Q1	= (not_ok -> Q0
+		  |ok -> Q5),
+	Q2	= (move_end -> Q6),
+	Q3	= (pedir -> Q4),
+	Q4	= (no_operation -> Q4),
+	Q5	= (move -> Q2),
+	Q6	= (sensar_distancia -> Q7),
+	Q7	= (lejos -> Q0
+		  |cerca -> Q3).

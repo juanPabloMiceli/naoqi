@@ -1,0 +1,36 @@
+/* Mision del nao sencilla
+	Esta mision sirve para probar el modulo de deteccion de pelotas rojas.
+	Contamos con 3 acciones controlables: sensar, luces_on y no_operation.
+	El unico objetivo es prender la luz de la cabeza una vez se haya visto la pelota luego de eso podemos hacer no_operation para siempre.
+	Para asumir que en algun momento vamos a poder ver la pelota usamos "failure" dentro de controllerSpec.
+*/
+
+LucesCabeza = LucesApagadas,
+LucesApagadas = (luces_on -> LucesPrendidas),
+LucesPrendidas = (no_operation -> LucesPrendidas).
+
+Sensor = Q0,
+Q0 = (sensar -> (vi_pelota -> Q0 | no_vi_pelota -> Q0)).
+
+||Nao = (LucesCabeza || Sensor).
+set Controlables = {luces_on, sensar, no_operation}
+set Alphabet = {Controlables, vi_pelota, no_vi_pelota}
+
+
+fluent Sensar = <sensar, Alphabet \ {sensar}> initially 0
+fluent LuzPrendida = <luces_on, Controlables \ Controlables> initially 0
+fluent ViPelota = <vi_pelota, Controlables \ Controlables> initially 0
+fluent NoViPelota = <no_vi_pelota, Controlables \ {no_vi_pelota}> initially 0
+assert A_NoViPelota = NoViPelota
+
+ltl_property SiPrendoViPelota = [](luces_on -> ViPelota)
+
+controllerSpec ControlSpec = {
+	safety = {SiPrendoViPelota}
+	assumption = {}
+	liveness = {LuzPrendida}
+	controllable = {Controlables}
+	failure = {A_NoViPelota}
+}
+controller ||Controller = (Nao)~{ControlSpec}.
+minimal ||UPDATE_CONTROLLER = (Nao || Controller).

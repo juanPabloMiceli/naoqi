@@ -146,7 +146,7 @@ class NaoMock:
                 ball_info = (distance, angle)
 
         end = time.time()
-        sleep_time = max(0, (1 / NaoProperties.nao_fps()) - (end - start))
+        sleep_time = max(0, (1 / 20) - (end - start))
         time.sleep(sleep_time)
 
         return ball_info
@@ -164,6 +164,8 @@ class NaoMock:
             return False
         return abs(angle) < (detection_angle / 2)
 
+    def ball_is_in_vision(self):
+        return self.get_ball_info() is not None
 
     def __get_distance_and_angle(self, nao_position, nao_direction, other_position):
         x_versor = np.array([1, 0]) 

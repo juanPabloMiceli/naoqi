@@ -1,6 +1,5 @@
 import math
 import threading
-from typing import final
 import numpy as np
 from workspace.cli.parsers.move_parser import rotate_clockwise
 from workspace.utils import geometry
