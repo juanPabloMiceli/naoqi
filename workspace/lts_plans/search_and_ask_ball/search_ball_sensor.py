@@ -26,6 +26,9 @@ class SearchBallSensor():
                 return self.NOT_OK
             return self.WAITING
         return self.OK
+        # if abs(ball_info[1]) < 10:
+        #     return self.OK
+        # return self.WAITING
 
     def start_search(self):
         self.search_start_time = time.time()

@@ -12,11 +12,18 @@ from workspace.robot.nao_shared_memory import NaoSharedMemory
 from workspace.utils.logger_factory import LoggerFactory
 from workspace.utils.nao_factory import NaoFactory
 
-AUTOMATA_PATH = "workspace/lts_plans/nao_ball/nao_ball.automata"
+AUTOMATA_PATH = "workspace/lts_plans/search_and_ask_ball/automata.fsp"
 LOGGER = LoggerFactory.get_logger("main")
 
 shared_memory = NaoSharedMemory()
 nao, simulation = NaoFactory.create(shared_memory)
+
+nao.head_leds_off()
+nao.look_at(0, 10)
+
+from workspace.naoqi_custom.red_ball_detection_module import RedBallDetectionModule
+redBallModule = RedBallDetectionModule("redBallModule", nao)
+nao.nao_memory.subscribeToEvent('redBallDetected', 'redBallModule', 'red_ball_detected')
 
 sensing_dict = {
         "ball_proximity_sensor": [BallProximitySensor(nao), False],
@@ -25,7 +32,7 @@ sensing_dict = {
 module_list = [AskModule(nao), DistanceSensingModule(nao, sensing_dict), MovingModule(nao), SearchBallModule(nao, sensing_dict)]
 
 # Load and start automata
-automata = Automata(module_list, shared_memory, verbose=False)
+automata = Automata(module_list, shared_memory, verbose=True)
 automata.load_automata_from_file(AUTOMATA_PATH)
 automata.start()
 
