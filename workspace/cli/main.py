@@ -4,6 +4,7 @@ import workspace.cli.parsers.debug_qrs_parser as debug_qrs_parser
 import workspace.cli.parsers.start_camera_parser as start_camera_parser
 import workspace.cli.parsers.look_at_parser as look_at_parser
 import workspace.cli.parsers.move_parser as move_parser
+import workspace.cli.parsers.stop_nao_parser as stop_nao_parser
 import workspace.cli.parsers.advanced_movement_parser as advanced_movement_parser
 import workspace.cli.parsers.tts_parser as tts_parser
 import workspace.cli.parsers.debug_red_ball_detection_parser as debug_red_ball_detection_parser
@@ -25,26 +26,20 @@ def add_subparsers(subparsers):
     advanced_movement_parser.add_parser(subparsers)
     tts_parser.add_parser(subparsers)
     debug_red_ball_detection_parser.add_parser(subparsers)
-
-def add_redball_module_to_nao(nao, simulation):
-    """
-    This has to be made in the main module, because this only works if redBallModule is a variable in the main scope.
-    i.e. It can't be RedBallDetectionModule.redBallModule.
-    (If this doesn't work, move redBallModule declaration outside add_redball_module_to_nao().)
-    """
-    if not NaoProperties.testing():
-        from workspace.naoqi_custom.red_ball_detection_module import RedBallDetectionModule
-        redBallModule = RedBallDetectionModule("redBallModule", nao)
-        nao.nao_memory.subscribeToEvent('redBallDetected', 'redBallModule', 'red_ball_detected')
+    stop_nao_parser.add_parser(subparsers)
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='A place with lots of simple NAO capabilities')
     add_subparsers(parser)
     args = parser.parse_args()
 
+
     if hasattr(args, 'func'):
         nao, simulation = NaoFactory.create(NaoSharedMemory())
-        add_redball_module_to_nao(nao, simulation)
+        if not NaoProperties.testing():
+            from workspace.naoqi_custom.red_ball_detection_module import RedBallDetectionModule
+            redBallModule = RedBallDetectionModule("redBallModule", nao)
+            nao.nao_memory.subscribeToEvent('redBallDetected', 'redBallModule', 'red_ball_detected')
         args.func(args, nao)
     else:
         parser.print_help()
