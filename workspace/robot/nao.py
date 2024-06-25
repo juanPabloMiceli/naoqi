@@ -10,9 +10,11 @@ from workspace.naoqi_custom.head_controller import HeadController
 from workspace.naoqi_custom.motion_controller import MotionController
 from workspace.location.locator_and_mapper import LocatorAndMapper
 from workspace.utils.qr_decoder import QrDecoder
+from naoqi import ALBroker
+import time
 
 class Nao:
-    def __init__(self, shared_memory):
+    def __init__(self, shared_memory, _map):
         self.shared_memory = shared_memory
         self.ip, self.port = NaoProperties().get_connection_properties()
         self.session = self.__start_session()
@@ -23,8 +25,8 @@ class Nao:
         self.nao_memory = self.session.service('ALMemory')
         self.video_controller = VideoController(self.ip, self.port)
         self.head_controller = HeadController(self.session)
-        self.movement_controller = MotionController(self.ip, self.port, None)
-        self.position_updater = LocatorAndMapper(shared_memory, self)
+        self.movement_controller = MotionController(self.ip, self.port)
+        self.position_updater = LocatorAndMapper(shared_memory, self, _map)
         self.tts = ProxyFactory.get_proxy("ALTextToSpeech", self.ip, self.port)
 
         self.last_ball_detected = time.time() - NaoProperties.seen_ball_time_of_grace()
@@ -42,10 +44,10 @@ class Nao:
 
     
     def head_leds_on(self):
-        self.leds_controller.on()
+        self.leds_controller.on("BrainLeds")
 
     def head_leds_off(self):
-        self.leds_controller.off()
+        self.leds_controller.off("BrainLeds")
 
     def set_awareness(self, new_awareness):
         self.awareness_controller.set(new_awareness)
@@ -94,11 +96,11 @@ class Nao:
 
     def get_ball_info(self):
         now = time.time()
-        if self.__ball_is_in_vision():
+        if self.ball_is_in_vision():
             return self.shared_memory.get_latest_ball_info()
         return None
 
-    def __ball_is_in_vision(self):
+    def ball_is_in_vision(self):
         return (time.time() - self.last_ball_detected) < NaoProperties.seen_ball_time_of_grace()
 
     def debug_red_ball_detection(self):
@@ -108,4 +110,4 @@ class Nao:
                 distance, horizontal_angle, vertical_angle = detected_ball_info
                 horizontal_side = "right" if horizontal_angle > 0 else "left"
                 vertical_side = "up" if vertical_angle > 0 else "down"
-                print("Ball detected: {}cm away, {}º {} and {}º {}".format(distance, horizontal_angle, horizontal_side, vertical_angle, vertical_side))
+                print("Ball detected: {}cm away, {}deg {} and {}deg {}".format(distance, horizontal_angle, horizontal_side, vertical_angle, vertical_side))

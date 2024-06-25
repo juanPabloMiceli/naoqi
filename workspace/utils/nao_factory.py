@@ -7,8 +7,8 @@ class NaoFactory:
     
     @staticmethod
     def create(shared_memory):
+        _map = Map('workspace/maps/square_map.json')
         if NaoProperties.testing():
-            _map = Map('workspace/maps/square_map.json')
             nao = NaoMock(shared_memory, _map)
             simulation = None
             if NaoProperties.simulation_on():
@@ -18,4 +18,4 @@ class NaoFactory:
             return nao, simulation
         else:
             from workspace.robot.nao import Nao
-            return Nao(shared_memory), None
+            return Nao(shared_memory, _map), None
