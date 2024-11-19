@@ -1,4 +1,3 @@
-from turtle import position
 import pygame
 from workspace.mock.simulation.colors import *
 from threading import Thread
@@ -14,9 +13,10 @@ class NaoSimulation(Thread):
         pygame.init()
         self.nao = nao
         self._map = _map
-        self.screen_width = 800
-        self.screen_height = 800
+        self.screen_width = 700
+        self.screen_height = 500
         self.map_offset = np.array([100, 100])
+        self.buttons_callbacks = {}
 
         self.screen = pygame.display.set_mode((self.screen_width, self.screen_height))
         self.setDaemon(True)
@@ -27,6 +27,13 @@ class NaoSimulation(Thread):
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     running = False
+                if event.type == pygame.MOUSEBUTTONDOWN:
+                    x, y = pygame.mouse.get_pos() 
+                    for _, button_info in self.buttons_callbacks.items():
+                        top, left, width, height = button_info["top"], button_info["left"], button_info["width"], button_info["height"]
+                        if left <= x <= left + width and top <= y <= top + height:
+                            button_info["callback"]()
+                            break
 
             # Fill the background with white
             self.screen.fill(DARK_GRAY)
@@ -35,11 +42,21 @@ class NaoSimulation(Thread):
             self.__draw_real_nao()
             self.__draw_goal()
             self.__draw_measured_nao()
+            self.__draw_buttons()
             # Update the display
             pygame.display.flip()
 
         # Quit Pygame
         pygame.quit()
+
+    def __draw_buttons(self):
+        for _, button_info in self.buttons_callbacks.items():
+            top, left, width, height = button_info["top"], button_info["left"], button_info["width"], button_info["height"]
+            inside_color = button_info['inside_color']
+            outside_color = button_info['outside_color']
+            pygame.draw.rect(self.screen, outside_color, (left - 5, top - 5, width + 10, height + 10))
+            pygame.draw.rect(self.screen, inside_color, (left, top, width, height))
+
 
     def __draw_map(self):
         pygame.draw.rect(self.screen, WHITE, (self.map_offset[0] - 5, self.map_offset[1] - 5, self._map.width + 10, self._map.height + 10))
@@ -48,6 +65,10 @@ class NaoSimulation(Thread):
         for qr in self._map.qrs:
             qr_position = qr.position + self.map_offset
             pygame.draw.circle(self.screen, PURPLE, qr_position, 3)
+
+        for ball in self._map.balls:
+            ball_position = ball.position + self.map_offset
+            pygame.draw.circle(self.screen, RED, ball_position, 5)
     
     def __draw_real_nao(self):
         nao_color = self.__get_nao_color()
@@ -107,5 +128,15 @@ class NaoSimulation(Thread):
     def __draw_goal(self):
         goal_position, _ = self.nao.get_goal()
         if goal_position is not None:
-            pygame.draw.circle(self.screen, GOLD, goal_position + self.map_offset, 20)
+            pygame.draw.circle(self.screen, GOLD, goal_position + self.map_offset, 20, 2)
 
+    def add_button(self, inside_color,  outside_color, rect, callback):
+        self.buttons_callbacks['button_{}'.format(len(self.buttons_callbacks))] = {
+            'left': rect[0],
+            'top': rect[1],
+            'width': rect[2],
+            'height': rect[3],
+            'inside_color': inside_color,
+            'outside_color': outside_color,
+            'callback': callback
+        }

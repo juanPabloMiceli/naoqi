@@ -1,3 +1,4 @@
+
 import time
 
 from workspace.utils.logger_factory import LoggerFactory
@@ -7,25 +8,35 @@ from workspace.naoqi_custom.proxy_factory import ProxyFactory
 
 
 class LedsController:
+    
+    class SUPPORTED_COLORS:
+        WHITE = 'white'
+        RED = 'red'
+        GREEN = 'green'
+        BLUE = 'blue'
+        YELLOW = 'yellow'
+        MAGENTA = 'magenta'
+        CYAN  = 'cyan'
+    
+    class SUPPORTED_GROUPS:
+        ALL = 'AllLeds'
+        BRAIN = 'BrainLeds'
+        EYES = 'FaceLeds'
+        EARS = 'EarLeds'
+        FEET = 'FeetLeds'
+        
     def __init__(self, ip, port):
         self.LOGGER = LoggerFactory.get_logger("LedsController")
         self.proxy = ProxyFactory.get_proxy("ALLeds", ip, port)
-        self.group = "BrainLeds"
 
-    def off(self):
-        self.LOGGER.info("Turning off leds [{}]".format(self.group))
-        self.proxy.off(self.group)
+    def on(self, group):
+        self.LOGGER.info(f'Turning on {group} leds')
+        self.proxy.on(group)
+    
+    def off(self, group):
+        self.LOGGER.info(f'Turning off {group} leds')
+        self.proxy.off(group)
 
-    def on(self):
-        self.LOGGER.info("Turning on leds [{}]".format(self.group))
-        self.proxy.on(self.group)
-
-if __name__ == "__main__":
-    IP, PORT = NaoProperties().get_connection_properties()
-    leds_controller = LedsController(IP, PORT)
-
-    while True:
-        leds_controller.on()
-        time.sleep(1)
-        leds_controller.off()
-        time.sleep(1)
+    def fade(self, group = 'FaceLeds', color = 'white'):
+        self.LOGGER.info(f"Setting {group} {color}")
+        self.proxy.fadeRGB(group, color, 0.0)

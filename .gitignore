@@ -13,3 +13,9 @@ sync_with_nao.sh
 
 # WSL
 *.Identifier
+
+# audio files
+*.wav
+
+# ignore
+*.ignore

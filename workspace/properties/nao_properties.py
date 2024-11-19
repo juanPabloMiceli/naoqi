@@ -3,6 +3,7 @@ import ConfigParser
 class NaoProperties:
     environment_section = 'Environment'
     connection_section = 'Connection'
+    misc_config_section = 'MiscConfiguration'
     simulation_section = 'Simulation'
     config = ConfigParser.RawConfigParser()
     config.read('workspace/nao.properties')
@@ -68,3 +69,11 @@ class NaoProperties:
     @classmethod
     def nao_fps(cls):
         return cls.config.getfloat(cls.simulation_section, 'nao_frames_per_second')
+
+    @classmethod
+    def balls_diameter(cls):
+        return cls.config.getfloat(cls.misc_config_section, 'red_balls_diameter')
+
+    @classmethod
+    def seen_ball_time_of_grace(cls):
+        return cls.config.getfloat(cls.misc_config_section, "seen_ball_time_of_grace_seconds")

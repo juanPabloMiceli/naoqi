@@ -52,29 +52,10 @@ class NaoMock:
 
         qrs_in_vision = []
         for qr in self._map.qrs:
-            distance = geometry.distance(qr.position, self.get_position_simulation())
-            if (
-                distance < NaoProperties.qr_min_distance()
-                or distance > NaoProperties.qr_max_distance()
-            ):
-                continue
-            nao_to_qr_direction = geometry.direction(
-                self.get_position_simulation(), qr.position
-            )
-            nao_direction_vector = geometry.rotate(
-                np.array([1, 0]), math.radians(self.get_direction_simulation())
-            )
+            distance, angle = self.__get_distance_and_angle(self.get_position_simulation(), self.get_direction_simulation(), qr.position)
 
-            angle_to_qr = math.degrees(
-                geometry.angle_between_vectors(
-                    nao_to_qr_direction, nao_direction_vector
-                )
-            )
-            if angle_to_qr > NaoProperties.qr_detection_angle() / 2 or angle_to_qr < -(
-                NaoProperties.qr_detection_angle() / 2
-            ):
-                continue
-            qrs_in_vision.append(QrPositionData(qr.id, distance, angle_to_qr))
+            if self.__is_in_vision(distance, angle, NaoProperties.qr_min_distance(), NaoProperties.qr_max_distance(), NaoProperties.qr_detection_angle()):
+                qrs_in_vision.append(QrPositionData(qr.id, distance, angle))
 
         end = time.time()
         sleep_time = max(0, (1 / NaoProperties.nao_fps()) - (end - start))
@@ -153,7 +134,10 @@ class NaoMock:
 
     def debug_qrs(self):
         while True:
-            self.get_qrs_in_vision()
+            qrs = self.get_qrs_in_vision()
+            for qr in qrs:
+                side = "right" if qr.angle < 0 else "left"
+                self.LOGGER.info("QR {} found {:.2f}cm away and {:.2f}deg {}".format(qr.id, qr.distance, abs(qr.angle), side))
 
     def sit(self):
         print("SEATED")
@@ -164,11 +148,50 @@ class NaoMock:
     def stand(self):
         print("STANDING")
 
-    def say(self, sentence):
-        print(sentence)
-
     def end_talk(self):
         self.redis_conn.set("talk_enabled", 0)
 
     def start_talk(self):
         self.redis_conn.set("talk_enabled", 1)
+    def say(self, text):
+        self.LOGGER.info("Nao says: \"{}\"".format(text))
+
+
+    def get_ball_info(self):
+        start = time.time()
+
+        ball_info = None
+        for ball in self._map.balls:
+            distance, angle = self.__get_distance_and_angle(self.get_position_simulation(), self.get_direction_simulation(), ball.position)
+
+            if self.__is_in_vision(distance, angle, NaoProperties.qr_min_distance(), NaoProperties.qr_max_distance(), NaoProperties.qr_detection_angle()):
+                ball_info = (distance, angle)
+
+        end = time.time()
+        sleep_time = max(0, (1 / NaoProperties.nao_fps()) - (end - start))
+        time.sleep(sleep_time)
+
+        return ball_info
+
+    def debug_red_ball_detection(self):
+        while True:
+            detected_ball_info = self.get_ball_info()
+            if detected_ball_info is not None:
+                distance, horizontal_angle = detected_ball_info
+                horizontal_side = "right" if horizontal_angle < 0 else "left"
+                self.LOGGER.info("Ball detected: {:.2f}cm away, {:.2f}deg {}".format(distance, abs(horizontal_angle), horizontal_side))
+
+    def __is_in_vision(self, distance, angle, min_distance, max_distance, detection_angle):
+        if distance < min_distance or distance > NaoProperties.qr_max_distance():
+            return False
+        return abs(angle) < (detection_angle / 2)
+
+
+    def __get_distance_and_angle(self, nao_position, nao_direction, other_position):
+        x_versor = np.array([1, 0]) 
+        distance = geometry.distance(other_position, nao_position)
+        nao_to_other_direction = geometry.direction(nao_position, other_position) 
+        nao_direction_vector = geometry.rotate(x_versor, math.radians(nao_direction)) 
+
+        angle_to_other = math.degrees(geometry.angle_between_vectors(nao_to_other_direction, nao_direction_vector))
+        return distance, angle_to_other

@@ -10,10 +10,12 @@ class NaoFactory:
         if NaoProperties.testing():
             _map = Map('workspace/maps/square_map.json')
             nao = NaoMock(shared_memory, _map)
+            simulation = None
             if NaoProperties.simulation_on():
                 from workspace.mock.simulation.nao_simulation import NaoSimulation
-                NaoSimulation(nao, _map).start()
-            return nao
+                simulation = NaoSimulation(nao, _map)
+                simulation.start()
+            return nao, simulation
         else:
             from workspace.robot.nao import Nao
-            return Nao(shared_memory)
+            return Nao(shared_memory), None
