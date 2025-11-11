@@ -1,0 +1,14 @@
+Process:
+	Controller
+States:
+	5
+Transitions:
+	Controller = Q0,
+	Q0	= (sensar -> Q2),
+	Q1	= (no_operation -> Q1
+		  |sensar -> Q4),
+	Q2	= (no_vi_pelota -> Q0
+		  |vi_pelota -> Q3),
+	Q3	= (luces_on -> Q1),
+	Q4	= ({no_vi_pelota, vi_pelota} -> Q1
+		  |no_operation -> Q4).

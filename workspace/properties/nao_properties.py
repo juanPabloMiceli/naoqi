@@ -77,3 +77,8 @@ class NaoProperties:
     @classmethod
     def seen_ball_time_of_grace(cls):
         return cls.config.getfloat(cls.misc_config_section, "seen_ball_time_of_grace_seconds")
+
+
+    @classmethod
+    def ball_reachable_distance(cls):
+        return cls.config.getint(cls.misc_config_section, "ball_reachable_distance_centimeters")

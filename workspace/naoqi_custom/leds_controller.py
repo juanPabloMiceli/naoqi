@@ -30,13 +30,13 @@ class LedsController:
         self.proxy = ProxyFactory.get_proxy("ALLeds", ip, port)
 
     def on(self, group):
-        self.LOGGER.info(f'Turning on {group} leds')
+        self.LOGGER.info('Turning on {} leds'.format(group))
         self.proxy.on(group)
     
     def off(self, group):
-        self.LOGGER.info(f'Turning off {group} leds')
+        self.LOGGER.info('Turning off {} leds'.format(group))
         self.proxy.off(group)
 
     def fade(self, group = 'FaceLeds', color = 'white'):
-        self.LOGGER.info(f"Setting {group} {color}")
+        self.LOGGER.info("Setting {} {}".format(group, color))
         self.proxy.fadeRGB(group, color, 0.0)
