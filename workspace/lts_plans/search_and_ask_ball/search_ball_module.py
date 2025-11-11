@@ -6,5 +6,4 @@ class SearchBallModule():
 
     def perfilar(self):
         self.nao.rotate_counter_clockwise()
-        self.sensors_dict["search_ball_sensor"][1] = True
-        self.sensors_dict["search_ball_sensor"][0].start_search()
+        self.sensors_dict["search_ball_sensor"].enable()

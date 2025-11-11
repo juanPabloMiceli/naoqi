@@ -1,11 +1,11 @@
 import time
 
-from workspace.lts_plans.nao_ball.ball_proximity_sensor import BallProximitySensor
-from workspace.lts_plans.nao_ball.ask_module import AskModule
-from workspace.lts_plans.nao_ball.distance_sensing_module import DistanceSensingModule
-from workspace.lts_plans.nao_ball.moving_module import MovingModule
-from workspace.lts_plans.nao_ball.search_ball_sensor import SearchBallSensor
-from workspace.lts_plans.nao_ball.search_ball_module import SearchBallModule
+from workspace.lts_plans.search_and_ask_ball.ball_proximity_sensor import BallProximitySensor
+from workspace.lts_plans.search_and_ask_ball.ask_module import AskModule
+from workspace.lts_plans.search_and_ask_ball.distance_sensing_module import DistanceSensingModule
+from workspace.lts_plans.search_and_ask_ball.moving_module import MovingModule
+from workspace.lts_plans.search_and_ask_ball.search_ball_sensor import SearchBallSensor
+from workspace.lts_plans.search_and_ask_ball.search_ball_module import SearchBallModule
 
 from workspace.automata.planner_automata import Automata
 from workspace.robot.nao_shared_memory import NaoSharedMemory
@@ -26,8 +26,8 @@ redBallModule = RedBallDetectionModule("redBallModule", nao)
 nao.nao_memory.subscribeToEvent('redBallDetected', 'redBallModule', 'red_ball_detected')
 
 sensing_dict = {
-        "ball_proximity_sensor": [BallProximitySensor(nao), False],
-        "search_ball_sensor": [SearchBallSensor(nao), False]
+        "ball_proximity_sensor": BallProximitySensor(nao),
+        "search_ball_sensor": SearchBallSensor(nao),
         }
 module_list = [AskModule(nao), DistanceSensingModule(nao, sensing_dict), MovingModule(nao), SearchBallModule(nao, sensing_dict)]
 
@@ -42,11 +42,8 @@ interval = 0
 
 while 1:
     # Sensing
-    for sensor_name, sensor_data in sensing_dict.items():
-        if sensor_data[1]:
-            disable_me = sensor_data[0].sense()
-            if disable_me:
-                sensor_data[1] = False
+    for sensor in sensing_dict.values():
+        sensor.sense()
 
     # Calculate time until next interval and sleep
     interval += 1

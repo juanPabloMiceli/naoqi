@@ -95,7 +95,6 @@ class Nao:
         self.shared_memory.set_new_ball(distance, horizontal_angle_degrees, vertical_angle_degrees)
 
     def get_ball_info(self):
-        now = time.time()
         if self.ball_is_in_vision():
             return self.shared_memory.get_latest_ball_info()
         return None

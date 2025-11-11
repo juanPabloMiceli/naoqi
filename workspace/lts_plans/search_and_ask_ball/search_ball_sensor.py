@@ -1,24 +1,27 @@
 import time
-from workspace.properties.nao_properties import NaoProperties
+from workspace.lts_plans.search_and_ask_ball.sensor import Sensor
 
-class SearchBallSensor():
+class SearchBallSensor(Sensor):
 
     OK = "ok"
     NOT_OK = "not_ok"
     WAITING = "waiting"
 
     def __init__(self, nao):
-        self.nao = nao
+        super(SearchBallSensor, self).__init__(nao)
         self.search_start_time = time.time()
 
-    def sense(self):
+    def on_enable(self):
+        self.search_start_time = time.time()
+
+    def _sense_impl(self):
         ball_info = self.nao.get_ball_info()
         ball_status = self.get_new_ball_status(ball_info)
         if ball_status == self.WAITING:
-            return False
+            return False # stay enabled
 
         self.nao.shared_memory.add_message(ball_status)
-        return True
+        return True # disable when done
 
     def get_new_ball_status(self, ball_info):
         if ball_info is None:
@@ -26,9 +29,4 @@ class SearchBallSensor():
                 return self.NOT_OK
             return self.WAITING
         return self.OK
-        # if abs(ball_info[1]) < 10:
-        #     return self.OK
-        # return self.WAITING
 
-    def start_search(self):
-        self.search_start_time = time.time()

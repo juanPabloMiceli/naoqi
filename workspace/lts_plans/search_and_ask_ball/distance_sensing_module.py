@@ -5,4 +5,4 @@ class DistanceSensingModule():
         self.sensing_dict = sensing_dict
 
     def sensar_distancia(self):
-        self.sensing_dict["ball_proximity_sensor"][1] = True
+        self.sensing_dict["ball_proximity_sensor"].enable()
